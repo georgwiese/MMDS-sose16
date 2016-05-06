@@ -11,6 +11,7 @@ YEARS = [2009, 2010, 2011, 2012, 2013, 2014, 2015]
 
 if not len(sys.argv) > 1:
   print "Usage: %s <data_dir>" % sys.argv[0]
+  sys.exit(1)
 
 data_dir = sys.argv[1]
 files = [f for f in os.listdir(data_dir) if not f.startswith(".")]
@@ -30,6 +31,7 @@ for year in YEARS:
             # Write header
             sample_file.write(line)
             first = False
+            continue
 
           if random.random() < KEEP_FRACTION:
             sample_file.write(line)
