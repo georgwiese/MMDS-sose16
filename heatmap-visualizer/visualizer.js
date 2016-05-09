@@ -21,7 +21,7 @@ fetch("/maps")
     }
   );
 
-var map, heatmap;
+var map, heatmap, animationIntervalId;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
@@ -37,25 +37,63 @@ function initMap() {
 }
 
 function onSelectMap() {
+  clearAnimationInterval()
   var mapName = document.getElementById("map-selector").value;
 
   if (!mapName) {
     heatmap.set("data", [])
+    document.getElementById("title").innerHTML = "";
     return;
   }
 
-  fetch("/maps/" + mapName)
-    .then(function(result) { return result.json(); })
-    .then(function(map) {
-      var data = map.data.map(function(dataPoint) {
-        return {
-          location: new google.maps.LatLng(dataPoint.lat, dataPoint.lon),
-          weight: dataPoint.weight
-        };
-      });
+  if (mapName.endsWith(".json")) {
+    fetch("/maps/" + mapName)
+      .then(function(result) { return result.json(); })
+      .then(displayMap);
+  } else {
+    fetch("/maps/" + mapName)
+      .then(function(result) { return result.json(); })
+      .then(function(mapNames) {
+        return Promise.all(
+          mapNames.map(function(mapName) {
+            return fetch(mapName).then(
+              function(result) { return result.json() });
+          })
+        )
+      })
+      .then(displayMapSeries);
+  }
+}
 
-      console.log(data)
-      heatmap.set("data", data);
-      heatmap.set("radius", map.pointRadius);
-    });
+function clearAnimationInterval() {
+  if (animationIntervalId) {
+    window.clearTimeout(animationIntervalId);
+    animationIntervalId = 0;
+  }
+}
+
+function displayMapSeries(maps) {
+  var index = 0;
+  displayMap(maps[index]);
+
+  function displayNextMap() {
+    index = (index + 1) % maps.length;
+    displayMap(maps[index])
+  }
+
+  clearAnimationInterval();
+  animationIntervalId = window.setInterval(displayNextMap, 1000);
+}
+
+function displayMap(map) {
+  var data = map.data.map(function(dataPoint) {
+    return {
+      location: new google.maps.LatLng(dataPoint.lat, dataPoint.lon),
+      weight: dataPoint.weight
+    };
+  });
+
+  document.getElementById("title").innerHTML = map.title;
+  heatmap.set("data", data);
+  heatmap.set("radius", map.pointRadius);
 }

@@ -28,6 +28,8 @@ Here's a sample map JSON file:
 }
 ```
 
-## Map Series (not yet implemented)
+## Map Series
 
 If you place a folder in the `map` directory, the files in that folder (assumed to be map JSONs as explained above) will all be loaded and displayed in alphabetical order in 1s steps.
+
+See `maps/series_example`.

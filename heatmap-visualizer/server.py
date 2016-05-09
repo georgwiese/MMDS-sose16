@@ -10,14 +10,23 @@ Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
 
 class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
-  def do_GET(self):
-    if self.path == "/maps":
-      self.send_response(200)
-      self.send_header('Content-type', 'application/json')
-      self.end_headers()
+  def _write_headers(self):
+    self.send_response(200)
+    self.send_header('Content-type', 'application/json')
+    self.end_headers()
 
+  def do_GET(self):
+
+    if self.path == "/maps":
+      self._write_headers()
       maps = json.dumps(os.listdir("./maps"))
       self.wfile.write(maps)
+
+    elif self.path.startswith("/maps") and not self.path.endswith(".json"):
+      self._write_headers()
+      maps = json.dumps([self.path + "/" + f for f in os.listdir("." + self.path)])
+      self.wfile.write(maps)
+
     else:
       return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
