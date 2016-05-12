@@ -25,8 +25,8 @@ var map, heatmap, animationIntervalId;
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
-    zoom: 10,
-    center: {lat: 40.818241, lng: -73.947435},
+    zoom: 12,
+    center: {lat: 40.7289429, lng: -73.9418335},
     mapTypeId: google.maps.MapTypeId.ROADMAP
   });
 
