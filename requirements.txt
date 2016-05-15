@@ -2,3 +2,6 @@ pandas
 jupyter
 numpy
 matplotlib
+requests
+scipy
+geopy
