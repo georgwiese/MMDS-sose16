@@ -118,4 +118,4 @@ preprocessed_features_df = pickup_summary.join(dropoff_summary, ["Time", "Lat", 
 preprocessed_features_df = preprocessed_features_df.na.fill(0)
 
 # Output
-preprocessed_features_df.rdd.saveAsTextFile(FILELOCATION_BASE + "summary")
+df.write.parquet(FILELOCATION_BASE + OUTPUT)
