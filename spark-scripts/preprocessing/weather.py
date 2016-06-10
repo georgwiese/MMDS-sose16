@@ -89,7 +89,7 @@ def get_missing_value(station, column, row):
 
 def add_missing_values(row):
     values = {
-        'Date': row.date
+        'Date': row.Date
     }
     for column in value_columns:
         for station in stations:

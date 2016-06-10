@@ -57,7 +57,7 @@ def map_to_hour(row):
     return rows
     
 prep_event_df = prep_event_df.flatMap(map_to_hour).toDF()
-prep_event_df = prep_event_df.groupby(prep_event_df.date).agg(*sums)
+prep_event_df = prep_event_df.groupby(prep_event_df.Time).agg(*sums)
 
 
 # Save preprocessed data
