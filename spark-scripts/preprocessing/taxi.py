@@ -22,7 +22,7 @@ from pyspark.sql.types import BooleanType
 from pyspark.sql.functions import udf
 
 
-FILELIST_FILE = "../scripts/filelist.txt"
+FILELIST_FILE = "../../scripts/filelist.txt"
 FILELOCATION_BASE = "hdfs://tenemhead2/data/mmds16/taxi/yellow/"
 OUTPUT = "summary"
 
@@ -118,4 +118,4 @@ preprocessed_features_df = pickup_summary.join(dropoff_summary, ["Time", "Lat", 
 preprocessed_features_df = preprocessed_features_df.na.fill(0)
 
 # Output
-df.write.parquet(FILELOCATION_BASE + OUTPUT)
+preprocessed_features_df.write.parquet(FILELOCATION_BASE + OUTPUT)
