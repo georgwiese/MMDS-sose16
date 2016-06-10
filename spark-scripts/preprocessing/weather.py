@@ -4,7 +4,7 @@ import datetime
 from pyspark import SparkContext
 from pyspark import SparkConf
 from pyspark.sql import SQLContext, Row
-from pyspark.sql.types import TimestampType
+from pyspark.sql.types import DateType
 import pyspark.sql.functions as func
 from pyspark.sql.functions import udf, col, when
 
@@ -28,20 +28,20 @@ sql_context = SQLContext(sc)
 weather_df = sql_context.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load(input_file)
 weather_df = weather_df.replace(-9999, np.nan)
 
-# Parse dates to datetime
-parse_date= lambda date_time: datetime.datetime.strptime(str(date_time), '%Y%m%d')
-parse_date_udf = udf(parse_date, TimestampType())
+# Parse dates
+parse_date = lambda date: datetime.datetime.strptime(str(date), '%Y%m%d').date()
+parse_date_udf = udf(parse_date, DateType())
 weather_df = weather_df.withColumn('DATE', parse_date_udf(weather_df.DATE))
 
 # Rename columns consistently
-weather_df = weather_df.withColumnRenamed('DATE', 'Time')
+weather_df = weather_df.withColumnRenamed('DATE', 'Date')
 weather_df = weather_df.withColumnRenamed('LATITUDE', 'Lat')
 weather_df = weather_df.withColumnRenamed('LONGITUDE', 'Lon')
 weather_df = weather_df.withColumnRenamed('STATION', 'Station')
 
 # Filter unnecessary columns
 value_columns = ['TMIN', 'TMAX', 'PRCP', 'AWND']
-weather_df = weather_df.select(weather_df.Time, weather_df.Lat, weather_df.Lon, weather_df.Station, *value_columns)
+weather_df = weather_df.select(weather_df.Date, weather_df.Lat, weather_df.Lon, weather_df.Station, *value_columns)
 
 # Get avg values for all value columns
 avg_values = {}
@@ -75,8 +75,8 @@ columns = [when(match_conditons, weather_df[column]).otherwise(None).alias(colum
 sums = [func.sum(col(column_name(column, station))).alias(column_name(column, station))
         for column in value_columns for station in stations]
 
-prep_weather_df = weather_df.select(weather_df.Time, *columns)
-prep_weather_df = prep_weather_df.groupby(weather_df.Time).agg(*sums)
+prep_weather_df = weather_df.select(weather_df.Date, *columns)
+prep_weather_df = prep_weather_df.groupby(weather_df.Date).agg(*sums)
 
 # Add minssing values
 def get_missing_value(station, column, row):
@@ -89,7 +89,7 @@ def get_missing_value(station, column, row):
 
 def add_missing_values(row):
     values = {
-        'Time': row.date
+        'Date': row.date
     }
     for column in value_columns:
         for station in stations:

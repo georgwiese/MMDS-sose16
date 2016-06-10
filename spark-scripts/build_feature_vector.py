@@ -111,6 +111,14 @@ cols += [func.when(weekday_udf(date_df.Time) == i, True).otherwise(False).alias(
 date_df = date_df.select(date_df.Time, *cols).withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
 
 
+# Aggregate events happening in last and next 3 hours for each hour
+event_3h_df = sql_context.createDataFrame([], event_df.schema)
+for i in range(-3, 4):
+    add_hours_udf = udf(lambda date_time: date_time + datetime.timedelta(hours=i), TimestampType())
+    event_3h_df = event_3h_df.unionAll(event_df.withColumn('Time', add_hours_udf(event_df.Time)))
+event_3h_df = agg_df.groupby(event_3h_df.Time).sum()
+
+
 # Join single feature groups
 features_df = taxi_df.select(index_columns + [taxi_df.Pickup_Count]) \
                      .join(taxi_dis_1h_df, index_columns) \
@@ -120,8 +128,8 @@ features_df = taxi_df.select(index_columns + [taxi_df.Pickup_Count]) \
                      .join(taxi_nyc_1h_df, 'Time') \
                      .join(taxi_nyc_4h_df, 'Time') \
                      .join(date_df, 'Time') \
-                     .join(weather_df, 'Time') \
-                     .join(event_df, 'Time')
+                     .join(weather_df, func.to_date(taxi_df.Time) == weather_df.Date) \
+                     .join(event_3h_df, 'Time')
 
 
 # Create feature vector for each district
