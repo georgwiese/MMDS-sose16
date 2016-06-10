@@ -50,7 +50,7 @@ def map_to_hour(row):
     rows = []
     for date in date_range:
         values = {column: row[column] for column in row.asDict() if column not in ['start_date', 'end_date']}
-        values['date'] = date
+        values['Time'] = date
         
         rows.append(Row(**values))
     

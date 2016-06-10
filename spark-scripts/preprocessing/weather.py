@@ -34,14 +34,14 @@ parse_date_udf = udf(parse_date, TimestampType())
 weather_df = weather_df.withColumn('DATE', parse_date_udf(weather_df.DATE))
 
 # Rename columns consistently
-weather_df = weather_df.withColumnRenamed('DATE', 'date')
-weather_df = weather_df.withColumnRenamed('LATITUDE', 'lat')
-weather_df = weather_df.withColumnRenamed('LONGITUDE', 'lon')
-weather_df = weather_df.withColumnRenamed('STATION', 'station')
+weather_df = weather_df.withColumnRenamed('DATE', 'Time')
+weather_df = weather_df.withColumnRenamed('LATITUDE', 'Lat')
+weather_df = weather_df.withColumnRenamed('LONGITUDE', 'Lon')
+weather_df = weather_df.withColumnRenamed('STATION', 'Station')
 
 # Filter unnecessary columns
 value_columns = ['TMIN', 'TMAX', 'PRCP', 'AWND']
-weather_df = weather_df.select(weather_df.date, weather_df.lat, weather_df.lon, weather_df.station, *value_columns)
+weather_df = weather_df.select(weather_df.Time, weather_df.Lat, weather_df.Lon, weather_df.Station, *value_columns)
 
 # Get avg values for all value columns
 avg_values = {}
@@ -50,10 +50,10 @@ for column in value_columns:
 
 
 # Get stations and their coordinates
-station_columns = [weather_df.station, weather_df.lat, weather_df.lon]
-agg = [func.avg(weather_df.lat).alias('lat'), func.avg(weather_df.lon).alias('lon')]
-stations_df = weather_df.select(station_columns).groupby(weather_df.station).agg(*agg).orderBy(weather_df.station)
-stations = stations_df.select(weather_df.station).map(lambda row: row[0]).collect()
+station_columns = [weather_df.Station, weather_df.Lat, weather_df.Lon]
+agg = [func.avg(weather_df.Lat).alias('Lat'), func.avg(weather_df.Lon).alias('Lon')]
+stations_df = weather_df.select(station_columns).groupby(weather_df.Station).agg(*agg).orderBy(weather_df.Station)
+stations = stations_df.select(weather_df.Station).map(lambda row: row[0]).collect()
 station_coords = stations_df.map(lambda row: (row[0], (row[1], row[2]))).collectAsMap()
 
 # Get neighbors for each station ordered by distance
@@ -69,14 +69,14 @@ for station in stations:
 def column_name(column, station):
     return '%s_%s' % (column, station)
 
-match_conditons = (weather_df.station == station) & (weather_df[column] != None)
+match_conditons = (weather_df.Station == station) & (weather_df[column] != None)
 columns = [when(match_conditons, weather_df[column]).otherwise(None).alias(column_name(column, station)) 
            for column in value_columns for station in stations]
 sums = [func.sum(col(column_name(column, station))).alias(column_name(column, station))
         for column in value_columns for station in stations]
 
-prep_weather_df = weather_df.select(weather_df.date, *columns)
-prep_weather_df = prep_weather_df.groupby(weather_df.date).agg(*sums)
+prep_weather_df = weather_df.select(weather_df.Time, *columns)
+prep_weather_df = prep_weather_df.groupby(weather_df.Time).agg(*sums)
 
 # Add minssing values
 def get_missing_value(station, column, row):
@@ -89,7 +89,7 @@ def get_missing_value(station, column, row):
 
 def add_missing_values(row):
     values = {
-        'date': row.date
+        'Time': row.date
     }
     for column in value_columns:
         for station in stations:
