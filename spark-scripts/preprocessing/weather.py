@@ -1,3 +1,16 @@
+"""
+Script that preprocesses the entire NOAA daily summeries weather dataset.
+
+Precomputes a table with the schema:
+- Time: date
+- {STATION}_PRCP: Precipitation in tenth of mm; one column per station
+- {STATION}_TMIN: Minimum temperature in celsius degrees to tenths; one column per station
+- {STATION}_TMAX: Maximum temperature in celsius degrees to tenths; one column per station
+- {STATION}_AWND: Average daily wind speed in tenths of meters per second; one column per station
+
+Missing values are added using the average value of the three nearest stations on that day. If no station has a value, the overall average is used. 
+"""
+
 import sys
 import datetime
 

@@ -1,3 +1,13 @@
+"""
+Script that preprocesses the entire merged NYC.gov/Seatgeek event dataset.
+
+Precomputes a table with the schema:
+- Time: datetime, with minutes and seconds discarded
+- {VENUE_ID}: Number of events happening at the specific venue; one column per venue
+
+Venues are identified by its coordinates.
+"""
+
 import sys
 import datetime
 

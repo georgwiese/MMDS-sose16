@@ -29,12 +29,11 @@ sql_context = SQLContext(sc)
 
 # Read preprocessed files
 def read_df(path):
-    return sql_context.read.parquet(WEATHER_FILE_PATH)
+    return sql_context.read.parquet(path)
 
-taxi_df = read_df(TAXI_FILE_PATH)
-weather_df = read_df(WEATHER_FILE_PATH)
-event_df = read_df(EVENTS_FILE_PATH)
-
+taxi_df = read_df(taxi_file)
+weather_df = read_df(weather_file)
+event_df = read_df(events_file)
 
 # Helpers
 index_columns = ['Time', 'Lat', 'Lon']
@@ -74,8 +73,8 @@ for i in range(-1, 2):
         if i == j == 0:
             continue
         
-        tmp_df = taxi_df.withColumn('Lat', func.round(taxi_df.lat + i * 0.01, 2))
-        tmp_df = tmp_df.withColumn('Lon', func.round(taxi_df.lon + j * 0.01, 2))
+        tmp_df = taxi_df.withColumn('Lat', func.round(taxi_df.Lat + i * 0.01, 2))
+        tmp_df = tmp_df.withColumn('Lon', func.round(taxi_df.Lon + j * 0.01, 2))
         taxi_nb_df = taxi_nb_df.unionAll(tmp_df)
 
 taxi_nb_df = taxi_nb_df.groupby(index_columns).agg(*sum_aggregations('Nb')).cache()
@@ -116,7 +115,7 @@ event_3h_df = sql_context.createDataFrame([], event_df.schema)
 for i in range(-3, 4):
     add_hours_udf = udf(lambda date_time: date_time + datetime.timedelta(hours=i), TimestampType())
     event_3h_df = event_3h_df.unionAll(event_df.withColumn('Time', add_hours_udf(event_df.Time)))
-event_3h_df = agg_df.groupby(event_3h_df.Time).sum()
+event_3h_df = event_3h_df.groupby(event_3h_df.Time).sum()
 
 
 # Join single feature groups

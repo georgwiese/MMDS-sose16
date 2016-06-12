@@ -1,4 +1,5 @@
-"""Script that preprocesses the entire yellow taxi data.
+"""
+Script that preprocesses the entire yellow taxi data.
 
 Precomputes a table with the schema:
 - Time: datetime, with minutes and seconds discarded
@@ -11,6 +12,7 @@ Lat / Lon discretization is achieved by rounding the floats to two decimal
 places.
 """
 
+import sys
 import datetime
 
 import pyspark.sql.functions as sqlfunctions
@@ -21,10 +23,13 @@ from pyspark.sql import SQLContext, Row
 from pyspark.sql.types import BooleanType
 from pyspark.sql.functions import udf
 
-
-FILELIST_FILE = "../../scripts/filelist.txt"
-FILELOCATION_BASE = "hdfs://tenemhead2/data/mmds16/taxi/yellow/"
-OUTPUT = "summary"
+# Get file paths from arguments
+if len(sys.argv) != 4:
+    print "Usage: taxi.py FILELOCATION_BASE INPUT_FILE_LIST_FILE OUTPUT_FILE"
+    sys.exit()
+file_location_base = sys.argv[1]
+input_file_list_file = sys.argv[2]
+output_file = sys.argv[3]
 
 # Even though columns are named differently, the column indices of the ones
 # we're interested in are consistent across years
@@ -38,22 +43,21 @@ COLUMN_INDEX_TO_NAME = {
 }
 
 # Setup Spark
-conf = (SparkConf().setMaster("spark://172.16.21.111:7077").setAppName('taxi-preprocessing'))
+conf = (SparkConf().setAppName('taxi-preprocessing'))
 sc = SparkContext(conf=conf)
 sql_context = SQLContext(sc)
 
 # Read & Parse file list.
 # From lines like "2009/yellow_tripdata_2009-03.csv", it extracts the file name.
-with open(FILELIST_FILE) as filelist_file:
+with open(input_file_list_file) as filelist_file:
     filelist = [line.strip().split("/")[1] for line in filelist_file.readlines()]
 
 # Read in all CSVs, project the relation to the column we need & concatenate
 df = None
 for csv_file in filelist:
-
     new_df = sql_context.read.format('com.databricks.spark.csv')\
              .options(header='true', inferschema='true')\
-             .load(FILELOCATION_BASE + csv_file)
+             .load(file_location_base + csv_file)
 
     for column_index, column_name in COLUMN_INDEX_TO_NAME.iteritems():
         new_df = new_df.withColumnRenamed(new_df.columns[column_index], column_name)
@@ -118,4 +122,4 @@ preprocessed_features_df = pickup_summary.join(dropoff_summary, ["Time", "Lat", 
 preprocessed_features_df = preprocessed_features_df.na.fill(0)
 
 # Output
-preprocessed_features_df.write.parquet(FILELOCATION_BASE + OUTPUT)
+preprocessed_features_df.write.parquet(output_file)
