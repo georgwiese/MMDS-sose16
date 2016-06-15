@@ -1,7 +1,7 @@
 import sys
 import math
 import datetime
-import dateutil
+#import dateutil
 
 from pyspark import SparkContext
 from pyspark import SparkConf
