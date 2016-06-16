@@ -1,7 +1,6 @@
 import sys
 import math
 import datetime
-#import dateutil
 
 from pyspark import SparkContext
 from pyspark import SparkConf
@@ -44,7 +43,7 @@ def sum_aggregations(category, hours=None):
     if hours:
         actual_suffix = '_%s' % category
         new_suffix += '_%sh' % hours
-    
+
     return [func.sum(column + actual_suffix).alias(column + new_suffix) for column in ['Pickup_Count', 'Dropoff_Count']]
 
 def get_agg_taxi_df(df, hours, group_columns, aggregations):
@@ -72,7 +71,7 @@ for i in range(-1, 2):
         # Exclude current district
         if i == j == 0:
             continue
-        
+
         tmp_df = taxi_df.withColumn('Lat', func.round(taxi_df.Lat + i * 0.01, 2))
         tmp_df = tmp_df.withColumn('Lon', func.round(taxi_df.Lon + j * 0.01, 2))
         taxi_nb_df = taxi_nb_df.unionAll(tmp_df)
@@ -96,15 +95,15 @@ date_df = taxi_df.select(taxi_df.Time).distinct()
 weekday_udf = udf(lambda date_time: date_time.weekday(), IntegerType())
 is_holiday_udf = udf(lambda date_time: date_time.date() in holidays.UnitedStates(), BooleanType())
 
-cols = [func.when(func.hour(date_df.Time) == i, True).otherwise(False).alias('Hour_' + str(i)) 
+cols = [func.when(func.hour(date_df.Time) == i, True).otherwise(False).alias('Hour_' + str(i))
         for i in range(0, 24)]
-cols += [func.when(func.dayofmonth(date_df.Time) == i, True).otherwise(False).alias('Day_' + str(i)) 
+cols += [func.when(func.dayofmonth(date_df.Time) == i, True).otherwise(False).alias('Day_' + str(i))
          for i in range(1, 32)]
-cols += [func.when(func.month(date_df.Time) == i, True).otherwise(False).alias('Month_' + str(i)) 
+cols += [func.when(func.month(date_df.Time) == i, True).otherwise(False).alias('Month_' + str(i))
          for i in range(1, 13)]
-cols += [func.when(func.year(date_df.Time) == i, True).otherwise(False).alias('Year_' + str(i)) 
+cols += [func.when(func.year(date_df.Time) == i, True).otherwise(False).alias('Year_' + str(i))
          for i in range(2009, 2016)]
-cols += [func.when(weekday_udf(date_df.Time) == i, True).otherwise(False).alias('Weekday_' + str(i)) 
+cols += [func.when(weekday_udf(date_df.Time) == i, True).otherwise(False).alias('Weekday_' + str(i))
          for i in range(0, 7)]
 
 date_df = date_df.select(date_df.Time, *cols).withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
@@ -132,13 +131,14 @@ features_df = taxi_df.select(index_columns + [taxi_df.Pickup_Count]) \
                      .join(weather_df, func.to_date(taxi_df.Time) == weather_df.Date) \
                      .join(event_3h_df, 'Time')
 
+features_df.write.parquet('hdfs://tenemhead2/data/mmds16/taxi/features')
 
 # Create feature vector for each district
 def create_point(row):
     feature_dict = row.asDict()
     for column in ['Time', 'Lat', 'Lon', 'Pickups']:
         del feature_dict[column]
-    
+
     return LabeledPoint(row.Pickup_Count, list(feature_dict.values()))
 
 district_points = features_df.map(lambda row: ((row.lat, row.lon), [create_point(row)])).reduceByKey(lambda x, y: x + y)
