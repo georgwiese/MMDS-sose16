@@ -30,4 +30,4 @@ spark-submit\
   --executor-memory $spark_memory\
   --driver-memory $spark_memory\
   --packages $spark_packages\
-  $py_file $script_args > logs/$logfile
+  $py_file $script_args &> logs/$logfile
