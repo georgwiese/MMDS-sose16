@@ -7,7 +7,7 @@ from pyspark import SparkContext
 from pyspark import SparkConf
 from pyspark.sql import SQLContext
 import pyspark.sql.functions as func
-from pyspark.sql.functions import udf
+from pyspark.sql.functions import udf, col, when
 from pyspark.sql.types import TimestampType, IntegerType, BooleanType
 from pyspark.mllib.regression import LabeledPoint
 
@@ -115,7 +115,9 @@ event_3h_df = sql_context.createDataFrame([], event_df.schema)
 for i in range(-3, 4):
     add_hours_udf = udf(lambda date_time: date_time + datetime.timedelta(hours=i), TimestampType())
     event_3h_df = event_3h_df.unionAll(event_df.withColumn('Time', add_hours_udf(event_df.Time)))
-event_3h_df = event_3h_df.groupby(event_3h_df.Time).sum()
+
+sum_agg = [func.sum(col(column)).alias(column) for column in event_df.columns if column != 'Time']
+event_3h_df = event_3h_df.groupby(event_3h_df.Time).agg(*sum_agg)
 
 
 # Join single feature groups
