@@ -13,12 +13,13 @@ from pyspark.mllib.regression import LabeledPoint
 import holidays
 
 # Get file paths from arguments
-if len(sys.argv) != 4:
-    print "Usage: build_feature_vector.py TAXI_FILE WEATHER_FILE EVENTS_FILE"
+if len(sys.argv) != 5:
+    print "Usage: build_feature_vector.py TAXI_FILE WEATHER_FILE EVENTS_FILE OUTPUT_FILE"
     sys.exit()
 taxi_file = sys.argv[1]
 weather_file = sys.argv[2]
 events_file = sys.argv[3]
+output_file = sys.argv[4]
 
 # Configure Spark
 conf = (SparkConf().setAppName('build_feature_vector'))
@@ -131,7 +132,7 @@ features_df = taxi_df.select(index_columns + [taxi_df.Pickup_Count]) \
                      .join(weather_df, func.to_date(taxi_df.Time) == weather_df.Date) \
                      .join(event_3h_df, 'Time')
 
-features_df.write.parquet('hdfs://tenemhead2/data/mmds16/taxi/features')
+features_df.write.parquet(output_file)
 
 # Create feature vector for each district
 def create_point(row):
