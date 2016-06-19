@@ -1,3 +1,53 @@
+"""
+Script that joins the given datasets (taxi, weather, events) and extracts the features per hour and district.
+
+Precomputes a table with the schema:
+- Time: datetime, with minutes and seconds discarded
+- Lat: latitude of the district
+- Lon: longitude of the district
+- Pickup_Count: Number of pickups in the corresponding hour and district
+- Dropoff_Count: Number of dropoffs in the corresponding hour and district
+
+- Number of pickups/dropoffs in the last 1/4 hours in the corresponding district
+    - Pickup_Count_Dis_1h
+    - Dropoff_Count_Dis_1h
+    - Pickup_Count_Dis_4h
+    - Dropoff_Count_Dis_4h
+    
+- Number of pickups/dropoffs in the last 1/4 hours in the neighboring districts
+    - Pickup_Count_Nb_1h
+    - Dropoff_Count_Nb_1h
+    - Pickup_Count_Nb_4h
+    - Dropoff_Count_Nb_4h
+    
+- Number of pickups/dropoffs in the last 1/4 hours in entire NYC
+    - Pickup_Count_Nyc_1h
+    - Dropoff_Count_Nyc_1h
+    - Pickup_Count_Nyc_4h
+    - Dropoff_Count_Nyc_4h
+
+- Hour: hour of the time (one-hot-encoding) 
+- Day: day of the time (one-hot-encoding) 
+- Month: month of the time (one-hot-encoding) 
+- Year: year of the time (one-hot-encoding) 
+- Weekday: weekday of the time (one-hot-encoding) 
+- IsHoliday: bool that determines, whether the current date was a holiday or not
+
+- Weather data for each of the 11 weather stations
+    - {STATION}_PRCP: Precipitation in tenth of mm; one column per station
+    - {STATION}_TMIN: Minimum temperature in celsius degrees to tenths; one column per station
+    - {STATION}_TMAX: Maximum temperature in celsius degrees to tenths; one column per station
+    - {STATION}_AWND: Average daily wind speed in tenths of meters per second; one column per station
+
+- Vector with one entry per venue that contains the number of occuring events in the corresponding hour(+/-3h) and venue
+    - Venues_-3h
+    - Venues_-2h
+    - Venues_-1h
+    - Venues_0h
+    - Venues_1h
+    - Venues_2h
+    - Venues_3h
+"""
 import sys
 import math
 import datetime
@@ -7,7 +57,8 @@ from pyspark import SparkConf
 from pyspark.sql import SQLContext
 import pyspark.sql.functions as func
 from pyspark.sql.functions import udf, col, when
-from pyspark.sql.types import TimestampType, IntegerType, BooleanType
+from pyspark.sql.types import TimestampType, IntegerType, DoubleType, BooleanType
+from pyspark.ml.feature import OneHotEncoder
 from pyspark.mllib.regression import LabeledPoint
 
 import holidays
@@ -96,28 +147,27 @@ date_df = taxi_df.select(taxi_df.Time).distinct()
 weekday_udf = udf(lambda date_time: date_time.weekday(), IntegerType())
 is_holiday_udf = udf(lambda date_time: date_time.date() in holidays.UnitedStates(), BooleanType())
 
-cols = [func.when(func.hour(date_df.Time) == i, True).otherwise(False).alias('Hour_' + str(i))
-        for i in range(0, 24)]
-cols += [func.when(func.dayofmonth(date_df.Time) == i, True).otherwise(False).alias('Day_' + str(i))
-         for i in range(1, 32)]
-cols += [func.when(func.month(date_df.Time) == i, True).otherwise(False).alias('Month_' + str(i))
-         for i in range(1, 13)]
-cols += [func.when(func.year(date_df.Time) == i, True).otherwise(False).alias('Year_' + str(i))
-         for i in range(2009, 2016)]
-cols += [func.when(weekday_udf(date_df.Time) == i, True).otherwise(False).alias('Weekday_' + str(i))
-         for i in range(0, 7)]
+date_df = date_df.withColumn('Hour', func.hour(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Day', func.dayofmonth(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Month', func.month(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Year', func.year(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Weekday', weekday_udf(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
 
-date_df = date_df.select(date_df.Time, *cols).withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
+cat_columns = ['Hour', 'Day', 'Month', 'Year', 'Weekday']
+vec_cat_columns = [column + '_Vector' for column in cat_columns]
+for i in range(len(cat_columns)):
+    date_df = OneHotEncoder(inputCol=cat_columns[i], outputCol=vec_cat_columns[i]).transform(date_df)
+
+date_df = date_df.select(date_df.Time, date_df.Is_Holiday, *vec_cat_columns)
 
 
 # Aggregate events happening in last and next 3 hours for each hour
-event_3h_df = sql_context.createDataFrame([], event_df.schema)
+event_3h_df = event_df.withColumnRenamed('Venues', 'Venues_0h')
 for i in range(-3, 4):
-    add_hours_udf = udf(lambda date_time: date_time + datetime.timedelta(hours=i), TimestampType())
-    event_3h_df = event_3h_df.unionAll(event_df.withColumn('Time', add_hours_udf(event_df.Time)))
-
-sum_agg = [func.sum(col(column)).alias(column) for column in event_df.columns if column != 'Time']
-event_3h_df = event_3h_df.groupby(event_3h_df.Time).agg(*sum_agg)
+    if i != 0:
+        add_hours_udf = udf(lambda date_time: date_time + datetime.timedelta(hours=i), TimestampType())
+        event_3h_df = event_3h_df.join(event_df.withColumn('Time', add_hours_udf(event_df.Time)).withColumnRenamed('Venues', 'Venues_%sh' % str(i)), 'Time')
 
 
 # Join single feature groups
@@ -129,17 +179,7 @@ features_df = taxi_df.select(index_columns + [taxi_df.Pickup_Count]) \
                      .join(taxi_nyc_1h_df, 'Time') \
                      .join(taxi_nyc_4h_df, 'Time') \
                      .join(date_df, 'Time') \
-                     .join(weather_df, func.to_date(taxi_df.Time) == weather_df.Date) \
+                     .join(weather_df, func.to_date(taxi_df.Time) == weather_df.Date).drop(weather_df.Date) \
                      .join(event_3h_df, 'Time')
 
 features_df.write.parquet(output_file)
-
-# Create feature vector for each district
-def create_point(row):
-    feature_dict = row.asDict()
-    for column in ['Time', 'Lat', 'Lon', 'Pickups']:
-        del feature_dict[column]
-
-    return LabeledPoint(row.Pickup_Count, list(feature_dict.values()))
-
-district_points = features_df.map(lambda row: ((row.lat, row.lon), [create_point(row)])).reduceByKey(lambda x, y: x + y)

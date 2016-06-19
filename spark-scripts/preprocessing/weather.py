@@ -91,7 +91,7 @@ sums = [func.sum(col(column_name(column, station))).alias(column_name(column, st
 prep_weather_df = weather_df.select(weather_df.Date, *columns)
 prep_weather_df = prep_weather_df.groupby(weather_df.Date).agg(*sums)
 
-# Add minssing values
+# Add missing values
 def get_missing_value(station, column, row):
     neighbor_values = [row[column_name(column, station)] for station in station_neighbors[station]]
     neighbor_values = [x for x in neighbor_values if x != None][:3]        

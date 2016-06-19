@@ -1,43 +1,59 @@
+"""
+Script that trains a random forrest model per district using the preprocessing feature dataframe. 
+All rows until {split_date} are used for training. 
+The models are stored in the specified {MODEL_FOLDER} using the following file name pattern: model_{LAT}_{LON}
+"""
+
 import sys
+from datetime import datetime
 
 from pyspark import SparkContext
 from pyspark import SparkConf
 from pyspark.sql import SQLContext
-from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.tree import RandomForest
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.ml.feature import VectorAssembler
 
 
 # Get file paths from arguments
 if len(sys.argv) != 3:
     print "Usage: random_forrest.py FEATURES_FILE MODEL_FOLDER"
-    sys.exit()
+  sys.exit()
 features_file = sys.argv[1]
 model_folder = sys.argv[2]
 
 # Configure Spark
-conf = (SparkConf().setAppName('train_random_forrest'))
+conf = (SparkConf().setAppName('train_linear_regression'))
 sc = SparkContext(conf=conf)
 sql_context = SQLContext(sc)
 
 # Read feature dataframe
 features_df = sql_context.read.parquet(features_file)
 
+# Split into train and test data
+split_date = datetime(2015, 1, 1)
+train_df = features_df.filter(features_df.Time < split_date)
+test_df = features_df.filter(features_df.Time > split_date)
+
+# Vectorize features
+feature_columns = [column for column in features_df.columns if column not in ['Time', 'Lat', 'Lon', 'Pickup_Count']]
+assembler = VectorAssembler(inputCols=feature_columns, outputCol='Features')
+vectorized_train_df = assembler.transform(train_df)
+
 # Create feature vector for each district
-def create_point(row):
-    feature_dict = row.asDict()
-    for column in ['Time', 'Lat', 'Lon', 'Pickup_Count']:
-        del feature_dict[column]
+def get_data_for_district(df, district):
+  lat, lon = district
+  return df.where((df.Lat == lat) & (df.Lon == lon))
 
-    return LabeledPoint(row.Pickup_Count, list(feature_dict.values()))
-
-points_per_district = features_df.map(lambda row: ((row.Lat, row.Lon), create_point(row))).groupByKey()
+districts = features_df.select(features_df.Lat, features_df.Lon).distinct() \
+            .map(lambda row: (row.Lat, row.Lon)).collect()
 
 # Train model per district and save model
-for district_points in points_per_district.collect():
-    coords = district_points[0]
-    points = district_points[1]
-
-    model = RandomForest.trainRegressor(sc.parallelize(points), categoricalFeaturesInfo={},
+vectorized_train_df = vectorized_train_df.cache()
+for lat, lon in districts:
+  points = get_data_for_district(vectorized_train_df, (lat, lon)).map(lambda row: LabeledPoint(row.Pickup_Count, row.Features))
+  if not points.isEmpty():
+    model = RandomForest.trainRegressor(points, categoricalFeaturesInfo={},
                                         numTrees=3, featureSubsetStrategy="auto",
                                         impurity='variance', maxDepth=4, maxBins=32)
-    model.save(sc, '%s/model_%s_%s' % (model_folder, str(coords[0]), str(coords[1])))
+    model.save(sc, '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))

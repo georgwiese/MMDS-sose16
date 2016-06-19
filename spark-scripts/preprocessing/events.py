@@ -17,6 +17,7 @@ from pyspark.sql import SQLContext, Row
 from pyspark.sql.types import TimestampType
 import pyspark.sql.functions as func
 from pyspark.sql.functions import udf, col, when
+from pyspark.ml.feature import VectorAssembler
 
 import pandas as pd
 
@@ -45,10 +46,11 @@ event_df = event_df.withColumn('end_date', parse_and_discretize(event_df.end_dat
 
 # Transform schema: One column per venue
 venues = event_df.select(event_df.latitude, event_df.longitude).distinct().map(lambda row: (row[0], row[1])).collect()
+venue_columns = [str(x) for x in range(len(venues))]
 
 columns = [when((event_df.latitude == venue[0]) & (event_df.longitude == venue[1]), 1).otherwise(0).alias(str(i)) 
            for i, venue in enumerate(venues)]
-sums = [func.sum(col(str(i))).alias(str(i)) for i in range(len(venues))]
+sums = [func.sum(col(column)).alias(column) for column in venue_columns]
 
 prep_event_df = event_df.select(event_df.start_date, event_df.end_date, *columns)
 prep_event_df = prep_event_df.groupby(prep_event_df.start_date, prep_event_df.end_date).agg(*sums)
@@ -58,8 +60,8 @@ def map_to_hour(row):
     date_range = pd.date_range(row.start_date, row.end_date, freq='H')
     date_range = [x.to_datetime() for x in date_range]
     rows = []
+    values = {column: row[column] for column in venue_columns}
     for date in date_range:
-        values = {column: row[column] for column in row.asDict() if column not in ['start_date', 'end_date']}
         values['Time'] = date
         
         rows.append(Row(**values))
@@ -69,6 +71,16 @@ def map_to_hour(row):
 prep_event_df = prep_event_df.flatMap(map_to_hour).toDF()
 prep_event_df = prep_event_df.groupby(prep_event_df.Time).agg(*sums)
 
+# Add missing dates within date range (2009 - 2015)
+start_date = datetime.datetime(2009, 1, 1)
+end_date = datetime.datetime(2015, 12, 31)
+date_rdd = sc.parallelize([(x.to_datetime(),) for x in pd.date_range(start_date, end_date, freq='H')])
+date_df = sql_context.createDataFrame(date_rdd, ['Time'])
+prep_event_df = prep_event_df.join(date_df, 'Time', 'right_outer').fillna(0)
+
+# Combine venue columns to (sparse) vector
+assembler = VectorAssembler(inputCols=venue_columns, outputCol='Venues')
+prep_event_df = assembler.transform(prep_event_df).select('Time', 'Venues')
 
 # Save preprocessed data
 prep_event_df.write.parquet(output_file)
