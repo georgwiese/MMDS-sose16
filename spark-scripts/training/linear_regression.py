@@ -24,6 +24,7 @@ model_folder = sys.argv[2]
 # Configure Spark
 conf = (SparkConf().setAppName('train_linear_regression'))
 sc = SparkContext(conf=conf)
+sc.setLogLevel('WARN')
 sql_context = SQLContext(sc)
 
 # Read feature dataframe

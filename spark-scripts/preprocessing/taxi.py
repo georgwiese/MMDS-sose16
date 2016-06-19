@@ -45,6 +45,7 @@ COLUMN_INDEX_TO_NAME = {
 # Setup Spark
 conf = (SparkConf().setAppName('taxi-preprocessing'))
 sc = SparkContext(conf=conf)
+sc.setLogLevel('WARN')
 sql_context = SQLContext(sc)
 
 # Read & Parse file list.

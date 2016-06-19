@@ -75,6 +75,7 @@ output_file = sys.argv[4]
 # Configure Spark
 conf = (SparkConf().setAppName('build_feature_vector'))
 sc = SparkContext(conf=conf)
+sc.setLogLevel('WARN')
 sql_context = SQLContext(sc)
 
 

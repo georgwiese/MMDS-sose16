@@ -32,6 +32,7 @@ output_file = sys.argv[2]
 # Configure Spark
 conf = (SparkConf().setAppName('events-preprocessing'))
 sc = SparkContext(conf=conf)
+sc.setLogLevel('WARN')
 sql_context = SQLContext(sc)
 
 # Read csv file
