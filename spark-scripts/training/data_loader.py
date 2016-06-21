@@ -1,7 +1,6 @@
 """
-Script that trains a linear regression model per district using the preprocessing feature dataframe.
-All rows until {split_date} are used for training.
-The models are stored in the specified {MODEL_FOLDER} using the following file name pattern: model_{LAT}_{LON}
+DataLoader class that creates a spar application, loads & preprocesses the data
+so that it can be used for training or evaluation.
 """
 
 import abc
@@ -13,7 +12,7 @@ from pyspark.sql import SQLContext
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.ml.feature import VectorAssembler
 
-class AbstractDistrictTrainer(object):
+class DataLoader(object):
 
   EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
   DISTRICT_COUNT_THRESHOLD = 50
@@ -78,12 +77,3 @@ class AbstractDistrictTrainer(object):
 
     return self.get_data_for_district(self.vectorized_train_df, district) \
            .map(lambda row: LabeledPoint(row.Pickup_Count, row.Features))
-
-
-  def train(self, district):
-    """Train the model.
-
-    Returns: A model instance with fit() and save() methods.
-    """
-
-    pass
