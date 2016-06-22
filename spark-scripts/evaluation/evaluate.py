@@ -8,6 +8,7 @@ from pyspark.mllib.evaluation import RegressionMetrics
 
 from spark_application import create_spark_application
 from data_loader import DataLoader
+from reader import read_districts_file
 
 MODEL_TYPE_TO_CLASS = {
   "linear": LinearRegressionModel
@@ -27,12 +28,7 @@ spark_context, sql_context = create_spark_application("evaluate_linear_regressio
 data_loader = DataLoader(spark_context, sql_context, features_file)
 data_loader.initialize()
 
-# Read Districts file
-districts = spark_context.textFile(districts_file) \
-            .map(lambda line: tuple([float(x.strip()) for x in line.split(",")])) \
-            .collect()
-
-for district in districts:
+for district in read_districts_file(districts_file):
   print("Evaluating district: %s" % str(district))
   lat, lon = district
 
