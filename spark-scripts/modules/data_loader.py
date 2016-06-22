@@ -12,7 +12,6 @@ from pyspark.ml.feature import VectorAssembler
 class DataLoader(object):
 
   EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
-  DISTRICT_COUNT_THRESHOLD = 50
 
   def __init__(self, spark_context, sql_context, features_file):
 
@@ -24,13 +23,10 @@ class DataLoader(object):
   def initialize(self):
     """Reads the dataset, initializes class members.
 
-    spark_context: The Spark Context
-    sql_context: The SQL Context
     features_df: Original DataFrame as read from the features_file.
     vectorized_train_df: A DataFrame with columns Lat, Lon, Pickup_Count and
         vector column Features.
-    districts_with_counts: List of tuples (Lat, Lon, count) of all districts
-        that exceed DISTRICT_COUNT_THRESHOLD.
+    districts_with_counts: A DataFrame with all districts and their counts.
     """
 
 
@@ -53,10 +49,6 @@ class DataLoader(object):
     self.districts_with_counts = self.features_df \
                                  .groupBy([self.features_df.Lat, self.features_df.Lon]) \
                                  .count()
-    self.districts_with_counts = self.districts_with_counts \
-        .where(self.districts_with_counts["count"] >= self.DISTRICT_COUNT_THRESHOLD) \
-        .map(lambda row: (row["Lat"], row["Lon"], row["count"])) \
-        .collect()
 
 
   def get_data_for_district(self, df, district):
