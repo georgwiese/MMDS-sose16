@@ -1,3 +1,10 @@
+# Preconditions
+To run the scripts, add this directory's `modules` folder to your `PYTHONPATH`:
+
+```bash
+export PYTHONPATH=$PYTHONPATH:/path/to/MMDS-sose16/spark-scripts/modules
+```
+
 # Starting Spark Scripts
 Spark scripts can be executed using the following command:
 ```sh

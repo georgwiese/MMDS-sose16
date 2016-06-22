@@ -1,14 +1,11 @@
 """
-DataLoader class that creates a spar application, loads & preprocesses the data
+DataLoader class loads & preprocesses the data
 so that it can be used for training or evaluation.
 """
 
 import abc
 from datetime import datetime
 
-from pyspark import SparkContext
-from pyspark import SparkConf
-from pyspark.sql import SQLContext
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.ml.feature import VectorAssembler
 
@@ -17,9 +14,10 @@ class DataLoader(object):
   EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
   DISTRICT_COUNT_THRESHOLD = 50
 
-  def __init__(self, app_name, features_file):
+  def __init__(self, spark_context, sql_context, features_file):
 
-    self.app_name = app_name
+    self.spark_context = spark_context
+    self.sql_context = sql_context
     self.features_file = features_file
 
 
@@ -35,11 +33,6 @@ class DataLoader(object):
         that exceed DISTRICT_COUNT_THRESHOLD.
     """
 
-    # Configure Spark
-    conf = (SparkConf().setAppName(self.app_name))
-    self.spark_context = SparkContext(conf=conf)
-    self.spark_context.setLogLevel('WARN')
-    self.sql_context = SQLContext(self.spark_context)
 
     # Read feature dataframe
     self.features_df = self.sql_context.read.parquet(self.features_file).cache()

@@ -7,6 +7,7 @@ The models are stored in the specified {MODEL_FOLDER} using the following file n
 import sys
 from pyspark.mllib.regression import LinearRegressionWithSGD
 
+from spark_application import create_spark_application
 from data_loader import DataLoader
 
 # Get file paths from arguments
@@ -16,7 +17,8 @@ if len(sys.argv) != 3:
 features_file = sys.argv[1]
 model_folder = sys.argv[2]
 
-data_loader = DataLoader("train_linear_regression", features_file)
+spark_context, sql_context = create_spark_application("train_linear_regression")
+data_loader = DataLoader(spark_context, sql_context, features_file)
 data_loader.initialize()
 
 for lat, lon, _ in data_loader.districts_with_counts:
@@ -24,5 +26,5 @@ for lat, lon, _ in data_loader.districts_with_counts:
   model = LinearRegressionWithSGD.train(data_loader.get_train_data((lat, lon)),
                                         iterations=100,
                                         step=0.00000001)
-  model.save(data_loader.spark_context,
+  model.save(spark_context,
              '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
