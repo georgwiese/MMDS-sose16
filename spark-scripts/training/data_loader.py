@@ -54,6 +54,7 @@ class DataLoader(object):
                               if column not in self.EXCLUDE_COLUMNS]
     assembler = VectorAssembler(inputCols=feature_columns, outputCol='Features')
     self.vectorized_train_df = assembler.transform(train_df).cache()
+    self.vectorized_test_df = assembler.transform(test_df).cache()
 
 
     self.districts_with_counts = self.features_df \
@@ -72,8 +73,20 @@ class DataLoader(object):
     return df.where((df.Lat == lat) & (df.Lon == lon))
 
 
-  def get_train_data(self, district):
+  def vectorized_df_to_labeled_points(self, df, district):
     """Returns an RDD of LabeledPoints."""
 
-    return self.get_data_for_district(self.vectorized_train_df, district) \
+    return self.get_data_for_district(df, district) \
            .map(lambda row: LabeledPoint(row.Pickup_Count, row.Features))
+
+
+  def get_train_data(self, district):
+
+    return self.vectorized_df_to_labeled_points(self.vectorized_train_df,
+                                                district)
+
+
+  def get_test_data(self, district):
+
+    return self.vectorized_df_to_labeled_points(self.vectorized_test_df,
+                                                district)
