@@ -26,7 +26,7 @@ features_file, model_folder, model_type, districts_file, result_csv = sys.argv[1
 
 ModelClass = MODEL_TYPE_TO_CLASS[model_type]
 
-spark_context, sql_context = create_spark_application("evaluate_linear_regression")
+spark_context, sql_context = create_spark_application("evaluate_%s_regression" % model_type)
 data_loader = DataLoader(spark_context, sql_context, features_file)
 data_loader.initialize()
 
