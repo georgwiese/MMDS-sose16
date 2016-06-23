@@ -4,6 +4,7 @@ Script that evaluates a given model.
 
 import sys
 from pyspark.mllib.regression import LinearRegressionModel
+from pyspark.mllib.tree import RandomForestModel
 from pyspark.mllib.evaluation import RegressionMetrics
 
 from spark_application import create_spark_application
@@ -12,6 +13,7 @@ from reader import read_districts_file
 
 MODEL_TYPE_TO_CLASS = {
   "linear": LinearRegressionModel
+  "random_forrest": RandomForestModel
 }
 
 # Get file paths from arguments
@@ -55,4 +57,3 @@ with open(result_csv, "w") as f:
   for district, mse, rmse in results:
     lat, lon = district
     f.write("%s, %s, %f, %f" % (str(lat), str(lon), mse, rmse))
-
