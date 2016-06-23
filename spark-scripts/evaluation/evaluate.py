@@ -12,13 +12,13 @@ from data_loader import DataLoader
 from reader import read_districts_file
 
 MODEL_TYPE_TO_CLASS = {
-  "linear": LinearRegressionModel
-  "random_forrest": RandomForestModel
+  "linear": LinearRegressionModel,
+  "random_forest": RandomForestModel
 }
 
 # Get file paths from arguments
 if len(sys.argv) != 6:
-  print "Usage: linear_regression.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_CSV"
+  print "Usage: evaluate.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_CSV"
   print "  where model type one of: %s" % str(MODEL_TYPE_TO_CLASS.keys())
   print "  and the districts file is a text file with lines \"<lat>, <lon>\"."
   sys.exit()
@@ -26,7 +26,7 @@ features_file, model_folder, model_type, districts_file, result_csv = sys.argv[1
 
 ModelClass = MODEL_TYPE_TO_CLASS[model_type]
 
-spark_context, sql_context = create_spark_application("evaluate_linear_regression")
+spark_context, sql_context = create_spark_application("evaluate_%s_regression" % model_type)
 data_loader = DataLoader(spark_context, sql_context, features_file)
 data_loader.initialize()
 
@@ -38,12 +38,9 @@ for district in read_districts_file(districts_file):
 
   model = ModelClass.load(spark_context,
                           '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
+  predictions_labels = [(float(model.predict(point.features)), point.label) for point in data_loader.get_test_data(district).collect()]
 
-  predictions_labels = data_loader.get_test_data(district) \
-                       .map(lambda point: (float(model.predict(point.features)),
-                                           point.label))
-
-  metrics = RegressionMetrics(predictions_labels)
+  metrics = RegressionMetrics(spark_context.parallelize(predictions_labels))
   mse, rmse = metrics.meanSquaredError, metrics.rootMeanSquaredError
   results.append((district, mse, rmse))
 
