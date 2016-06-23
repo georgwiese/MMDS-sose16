@@ -38,12 +38,9 @@ for district in read_districts_file(districts_file):
 
   model = ModelClass.load(spark_context,
                           '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
+  predictions_labels = [(float(model.predict(point.features)), point.label) for point in data_loader.get_test_data(district).collect()]
 
-  predictions_labels = data_loader.get_test_data(district) \
-                       .map(lambda point: (float(model.predict(point.features)),
-                                           point.label))
-
-  metrics = RegressionMetrics(predictions_labels)
+  metrics = RegressionMetrics(spark_context.parallelize(predictions_labels))
   mse, rmse = metrics.meanSquaredError, metrics.rootMeanSquaredError
   results.append((district, mse, rmse))
 
