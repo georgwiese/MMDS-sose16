@@ -12,7 +12,7 @@ from data_loader import DataLoader
 from reader import read_districts_file
 
 MODEL_TYPE_TO_CLASS = {
-  "linear": LinearRegressionModel
+  "linear": LinearRegressionModel,
   "random_forrest": RandomForestModel
 }
 
