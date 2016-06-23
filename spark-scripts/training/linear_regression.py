@@ -25,6 +25,6 @@ for lat, lon in read_districts_file(districts_file):
   print("Training District: %f, %f" % (lat, lon))
   model = LinearRegressionWithSGD.train(data_loader.get_train_data((lat, lon)),
                                         iterations=100,
-                                        step=0.00000001)
+                                        step=1e-8)
   model.save(spark_context,
              '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
