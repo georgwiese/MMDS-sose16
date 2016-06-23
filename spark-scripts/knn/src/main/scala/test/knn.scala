@@ -13,7 +13,7 @@ object Main {
 	val sc = new SparkContext(conf)
 	//read in raw label and features
 
-	val dataDF = MLUtils.loadLibSVMFile(sc, "hdfs://tenemhead2/data/mmds16/taxi/		features").toDF()
+	val dataDF = MLUtils.loadLibSVMFile(sc, "hdfs://tenemhead2/data/mmds16/taxi/features").toDF()
 	val trainingDF = dataDF.where("Time.year < 2015")
 	val testingDF = dataDF.where("Time.year > 2014")
 
