@@ -13,12 +13,12 @@ from reader import read_districts_file
 
 MODEL_TYPE_TO_CLASS = {
   "linear": LinearRegressionModel,
-  "random_forrest": RandomForestModel
+  "random_forest": RandomForestModel
 }
 
 # Get file paths from arguments
 if len(sys.argv) != 6:
-  print "Usage: linear_regression.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_CSV"
+  print "Usage: evaluate.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_CSV"
   print "  where model type one of: %s" % str(MODEL_TYPE_TO_CLASS.keys())
   print "  and the districts file is a text file with lines \"<lat>, <lon>\"."
   sys.exit()
