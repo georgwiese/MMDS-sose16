@@ -25,7 +25,7 @@ for lat, lon in read_districts_file(districts_file):
   print("Training District: %f, %f" % (lat, lon))
   model = RandomForest.trainRegressor(data_loader.get_train_data((lat, lon)),
                                       categoricalFeaturesInfo={},
-                                      numTrees=3, featureSubsetStrategy="auto",
-                                      impurity='variance', maxDepth=4, maxBins=32)
+                                      numTrees=5,
+                                      maxDepth=15)
   model.save(spark_context,
              '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
