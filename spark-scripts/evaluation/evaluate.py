@@ -53,4 +53,4 @@ with open(result_csv, "w") as f:
 
   for district, mse, rmse in results:
     lat, lon = district
-    f.write("%s, %s, %f, %f" % (str(lat), str(lon), mse, rmse))
+    f.write("%s, %s, %f, %f\n" % (str(lat), str(lon), mse, rmse))
