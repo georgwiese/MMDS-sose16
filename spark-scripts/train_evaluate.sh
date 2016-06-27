@@ -1,6 +1,6 @@
 if [  $# -lt 5 ]
 then
-  echo "Usage: $0 <model type> <feature file> <model folder> <districs file> <result csv>"
+  echo "Usage: $0 <model type> <feature file> <model folder> <districs file> <result path>"
   exit 1
 fi
 
@@ -8,7 +8,7 @@ model_type=$1
 features_file=$2
 model_folder=$3
 districts_file=$4
-result_csv=$5
+result_path=$5
 
 if [ "$model_type" == "linear" ]
 then
@@ -27,4 +27,4 @@ echo "Train model"
 ./spark_submit_tenem.sh $py_training_file $features_file $model_folder $districts_file
 
 echo "Evaluate model"
-./spark_submit_tenem.sh $py_evaluation_file $features_file $model_folder $model_type $districts_file $result_csv
+./spark_submit_tenem.sh $py_evaluation_file $features_file $model_folder $model_type $districts_file $result_path
