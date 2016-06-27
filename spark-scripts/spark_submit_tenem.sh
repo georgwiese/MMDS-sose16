@@ -25,9 +25,11 @@ spark_master="spark://172.16.21.111:7077"
 
 mkdir -p logs
 
+echo "$py_file $script_args" > logs/$logfile
+
 spark-submit\
   --master $spark_master\
   --executor-memory $spark_memory\
   --driver-memory $spark_memory\
   --packages $spark_packages\
-  $py_file $script_args &> logs/$logfile
+  $py_file $script_args &>> logs/$logfile

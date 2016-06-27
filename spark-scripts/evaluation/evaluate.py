@@ -3,6 +3,7 @@ Script that evaluates a given model.
 """
 
 import sys
+import os
 from pyspark.mllib.regression import LinearRegressionModel
 from pyspark.mllib.tree import RandomForestModel
 from pyspark.mllib.evaluation import RegressionMetrics
@@ -18,11 +19,11 @@ MODEL_TYPE_TO_CLASS = {
 
 # Get file paths from arguments
 if len(sys.argv) != 6:
-  print "Usage: evaluate.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_CSV"
+  print "Usage: evaluate.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_PATH"
   print "  where model type one of: %s" % str(MODEL_TYPE_TO_CLASS.keys())
   print "  and the districts file is a text file with lines \"<lat>, <lon>\"."
   sys.exit()
-features_file, model_folder, model_type, districts_file, result_csv = sys.argv[1:]
+features_file, model_folder, model_type, districts_file, result_path = sys.argv[1:]
 
 ModelClass = MODEL_TYPE_TO_CLASS[model_type]
 
@@ -39,6 +40,7 @@ for district in read_districts_file(districts_file):
   model = ModelClass.load(spark_context,
                           '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
   predictions_labels = [(float(model.predict(point.features)), point.label) for point in data_loader.get_test_data(district).collect()]
+  print(predictions_labels[:10])
 
   metrics = RegressionMetrics(spark_context.parallelize(predictions_labels))
   mse, rmse = metrics.meanSquaredError, metrics.rootMeanSquaredError
@@ -48,7 +50,10 @@ for district in read_districts_file(districts_file):
   print("RMSE = %s" % rmse)
 
 # Write Result CSV
-with open(result_csv, "w") as f:
+model_name = model_folder.split("/")[-1]
+filename = os.path.join(result_path, "%s_result.csv" % model_name)
+
+with open(filename, "w") as f:
   f.write("lat, lon, mse, rmse\n")
 
   for district, mse, rmse in results:
