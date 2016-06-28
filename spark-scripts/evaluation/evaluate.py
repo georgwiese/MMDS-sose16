@@ -50,7 +50,8 @@ for district in read_districts_file(districts_file):
   print(predictions_labels[:10])
 
   # Compute Proportional Errors and Squared Proportional Errors
-  pes = [abs(pred - label) / label for pred, label in predictions_labels]
+  pes = [abs(pred - label) / (label if label > 0 else 1)
+         for pred, label in predictions_labels]
   spes = [pe * pe for pe in pes]
   mspe = np.mean(spes)
   mpe = np.mean(pes)
