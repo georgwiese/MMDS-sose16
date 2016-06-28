@@ -76,7 +76,7 @@ for district in read_districts_file(districts_file):
     f.write("time, prediction, label\n")
 
     for time, (prediction, label) in zip(times, predictions_labels):
-      f.write("%s, %f, %f" % (str(time), prediction, label))
+      f.write("%s, %f, %f\n" % (str(time), prediction, label))
 
 # Write Result CSV
 filename = os.path.join(result_path, "%s_result.csv" % model_name)
