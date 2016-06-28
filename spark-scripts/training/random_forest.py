@@ -19,7 +19,7 @@ features_file, model_folder, districts_file = sys.argv[1:]
 
 spark_context, sql_context = create_spark_application("train_random_forest")
 data_loader = DataLoader(spark_context, sql_context, features_file)
-data_loader.initialize(False)
+data_loader.initialize(do_scaling=False)
 
 for lat, lon in read_districts_file(districts_file):
   print("Training District: %f, %f" % (lat, lon))
