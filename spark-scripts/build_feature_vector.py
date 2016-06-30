@@ -155,12 +155,12 @@ date_df = date_df.withColumn('Year', func.year(date_df.Time).cast(DoubleType()))
 date_df = date_df.withColumn('Weekday', weekday_udf(date_df.Time).cast(DoubleType()))
 date_df = date_df.withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
 
-cat_columns = ['Hour', 'Day', 'Month', 'Year', 'Weekday']
+cat_columns = ['Hour', 'Day', 'Month', 'Weekday']
 vec_cat_columns = [column + '_Vector' for column in cat_columns]
 for i in range(len(cat_columns)):
     date_df = OneHotEncoder(inputCol=cat_columns[i], outputCol=vec_cat_columns[i]).transform(date_df)
 
-date_df = date_df.select(date_df.Time, date_df.Is_Holiday, *vec_cat_columns)
+date_df = date_df.select(date_df.Time, date_df.Year, date_df.Is_Holiday, *vec_cat_columns)
 
 
 # Aggregate events happening in last and next 3 hours for each hour
