@@ -20,7 +20,7 @@ logfile="${scriptname}-${timestamp}.log"
 
 # Default spark arguments
 spark_packages="com.databricks:spark-csv_2.11:1.4.0"
-spark_memory="3G"
+spark_memory="4G"
 spark_master="spark://172.16.21.111:7077"
 
 mkdir -p logs
