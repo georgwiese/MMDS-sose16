@@ -63,6 +63,9 @@ from pyspark.mllib.regression import LabeledPoint
 
 import holidays
 
+from spark_application import create_spark_application
+
+
 # Get file paths from arguments
 if len(sys.argv) != 5:
     print "Usage: build_feature_vector.py TAXI_FILE WEATHER_FILE EVENTS_FILE OUTPUT_FILE"
@@ -72,12 +75,7 @@ weather_file = sys.argv[2]
 events_file = sys.argv[3]
 output_file = sys.argv[4]
 
-# Configure Spark
-conf = (SparkConf().setAppName('build_feature_vector'))
-sc = SparkContext(conf=conf)
-sc.setLogLevel('WARN')
-sql_context = SQLContext(sc)
-
+spark_context, sql_context = create_spark_application('build_feature_vector')
 
 # Read preprocessed files
 def read_df(path):
