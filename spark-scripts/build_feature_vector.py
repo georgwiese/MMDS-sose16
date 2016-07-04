@@ -13,24 +13,24 @@ Precomputes a table with the schema:
     - Dropoff_Count_Dis_1h
     - Pickup_Count_Dis_4h
     - Dropoff_Count_Dis_4h
-    
+
 - Number of pickups/dropoffs in the last 1/4 hours in the neighboring districts
     - Pickup_Count_Nb_1h
     - Dropoff_Count_Nb_1h
     - Pickup_Count_Nb_4h
     - Dropoff_Count_Nb_4h
-    
+
 - Number of pickups/dropoffs in the last 1/4 hours in entire NYC
     - Pickup_Count_Nyc_1h
     - Dropoff_Count_Nyc_1h
     - Pickup_Count_Nyc_4h
     - Dropoff_Count_Nyc_4h
 
-- Hour: hour of the time (one-hot-encoding) 
-- Day: day of the time (one-hot-encoding) 
-- Month: month of the time (one-hot-encoding) 
-- Year: year of the time (one-hot-encoding) 
-- Weekday: weekday of the time (one-hot-encoding) 
+- Hour: hour of the time
+- Day: day of the time
+- Month: month of the time
+- Year: year of the time
+- Weekday: weekday of the time
 - IsHoliday: bool that determines, whether the current date was a holiday or not
 
 - Weather data for each of the 11 weather stations
@@ -146,19 +146,12 @@ date_df = taxi_df.select(taxi_df.Time).distinct()
 weekday_udf = udf(lambda date_time: date_time.weekday(), IntegerType())
 is_holiday_udf = udf(lambda date_time: date_time.date() in holidays.UnitedStates(), BooleanType())
 
-date_df = date_df.withColumn('Hour', func.hour(date_df.Time).cast(DoubleType()))
-date_df = date_df.withColumn('Day', func.dayofmonth(date_df.Time).cast(DoubleType()))
-date_df = date_df.withColumn('Month', func.month(date_df.Time).cast(DoubleType()))
-date_df = date_df.withColumn('Year', func.year(date_df.Time).cast(DoubleType()))
-date_df = date_df.withColumn('Weekday', weekday_udf(date_df.Time).cast(DoubleType()))
+date_df = date_df.withColumn('Hour', func.hour(date_df.Time))
+date_df = date_df.withColumn('Day', func.dayofmonth(date_df.Time))
+date_df = date_df.withColumn('Month', func.month(date_df.Time))
+date_df = date_df.withColumn('Year', func.year(date_df.Time))
+date_df = date_df.withColumn('Weekday', weekday_udf(date_df.Time))
 date_df = date_df.withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
-
-cat_columns = ['Hour', 'Day', 'Month', 'Weekday']
-vec_cat_columns = [column + '_Vector' for column in cat_columns]
-for i in range(len(cat_columns)):
-    date_df = OneHotEncoder(inputCol=cat_columns[i], outputCol=vec_cat_columns[i]).transform(date_df)
-
-date_df = date_df.select(date_df.Time, date_df.Year, date_df.Is_Holiday, *vec_cat_columns)
 
 
 # Aggregate events happening in last and next 3 hours for each hour

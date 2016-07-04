@@ -35,8 +35,8 @@ ModelClass = MODEL_TYPE_TO_CLASS[model_type]
 
 spark_context, sql_context = create_spark_application("evaluate_%s_regression" % model_type)
 data_loader = DataLoader(spark_context, sql_context, features_file)
-do_scaling = True if model_type == "linear" else False
-data_loader.initialize(do_scaling=do_scaling)
+do_scaling = do_onehot = model_type == "linear"
+data_loader.initialize(do_scaling=do_scaling, do_onehot=do_onehot)
 
 results = []
 

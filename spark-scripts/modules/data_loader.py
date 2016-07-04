@@ -7,11 +7,11 @@ import abc
 from datetime import datetime
 
 from pyspark.mllib.regression import LabeledPoint
-from pyspark.ml.feature import VectorAssembler, StandardScaler
+from pyspark.ml.feature import VectorAssembler, StandardScaler, StringIndexer, OneHotEncoder
 
 class DataLoader(object):
 
-  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count', 'FeaturesToScale']
+  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
   SCALE_COLUMNS = ['Pickup_Count_Dis_1h',
                    'Dropoff_Count_Dis_1h',
                    'Pickup_Count_Dis_4h',
@@ -68,6 +68,13 @@ class DataLoader(object):
                    'TMIN_GHCND:USW00014732',
                    'TMIN_GHCND:USW00094728',
                    'TMIN_GHCND:USW00094789']
+  CATEGORY_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
+  CATEGORY_VALUES_COUNT = {
+    'Hour': 24,
+    'Day': 31,
+    'Month': 12,
+    'Weekday': 7
+  }
 
   def __init__(self, spark_context, sql_context, features_file):
 
@@ -76,7 +83,7 @@ class DataLoader(object):
     self.features_file = features_file
 
 
-  def initialize(self, do_scaling=True):
+  def initialize(self, do_scaling=True, do_onehot=True):
     """Reads the dataset, initializes class members.
 
     features_df: Original DataFrame as read from the features_file.
@@ -89,6 +96,9 @@ class DataLoader(object):
     # Read feature dataframe
     self.features_df = self.sql_context.read.parquet(self.features_file).cache()
 
+    # Set exclude columns to default
+    exclude_columns = self.EXCLUDE_COLUMNS
+
     # Scale features
     if do_scaling:
       assembler = VectorAssembler(inputCols=self.SCALE_COLUMNS,
@@ -99,13 +109,34 @@ class DataLoader(object):
                               withStd=True, withMean=False)
       self.features_df = scaler.fit(self.features_df).transform(self.features_df)
 
+      exclude_columns += self.SCALE_COLUMNS + ['FeaturesToScale']
+
+    # Encode category features to one-hot representation
+    if do_onehot:
+      indexed_category_columns = ['%s_Index' % column for column in self.CATEGORY_COLUMNS]
+      vec_category_columns = ['%s_Vector' % column for column in self.CATEGORY_COLUMNS]
+      for i in range(len(self.CATEGORY_COLUMNS)):
+          indexer = StringIndexer(inputCol=self.CATEGORY_COLUMNS[i],
+                                  outputCol=indexed_category_columns[i])
+          self.features_df = indexer.fit(self.features_df).transform(self.features_df)
+          encoder = OneHotEncoder(inputCol=indexed_category_columns[i],
+                                  outputCol=vec_category_columns[i])
+          self.features_df = encoder.transform(self.features_df)
+
+      exclude_columns += self.CATEGORY_COLUMNS + indexed_category_columns
+
     # Vectorize features
-    exclude_columns = self.EXCLUDE_COLUMNS + self.SCALE_COLUMNS \
-                        if do_scaling else self.EXCLUDE_COLUMNS
     feature_columns = [column for column in self.features_df.columns
                               if column not in exclude_columns]
     assembler = VectorAssembler(inputCols=feature_columns, outputCol='Features')
     self.features_df = assembler.transform(self.features_df)
+
+    # Set number of distinct values for categorical features (identified by index)
+    self.categorical_features_info = {}
+    if not do_onehot:
+        self.categorical_features_info = {i:self.CATEGORY_VALUES_COUNT[feature_columns[i]]
+                                          for i in range(len(feature_columns))
+                                          if feature_columns[i] in self.CATEGORY_COLUMNS}
 
     # Split into train and test data
     split_date = datetime(2015, 1, 1)
@@ -140,3 +171,7 @@ class DataLoader(object):
   def get_test_data(self, district):
 
     return self.df_to_labeled_points(self.test_df, district)
+
+  def get_categorical_features_info(self):
+
+    return self.categorical_features_info

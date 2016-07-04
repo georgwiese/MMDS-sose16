@@ -19,12 +19,13 @@ features_file, model_folder, districts_file = sys.argv[1:]
 
 spark_context, sql_context = create_spark_application("train_random_forest")
 data_loader = DataLoader(spark_context, sql_context, features_file)
-data_loader.initialize(do_scaling=False)
+data_loader.initialize(do_scaling=False, do_onehot=False)
 
+categorical_features_info = data_loader.get_categorical_features_info()
 for lat, lon in read_districts_file(districts_file):
   print("Training District: %f, %f" % (lat, lon))
   model = RandomForest.trainRegressor(data_loader.get_train_data((lat, lon)),
-                                      categoricalFeaturesInfo={},
+                                      categoricalFeaturesInfo=categorical_features_info,
                                       numTrees=5,
                                       maxDepth=15)
   model.save(spark_context,
