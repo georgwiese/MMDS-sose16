@@ -111,19 +111,23 @@ class DataLoader(object):
 
       exclude_columns += self.SCALE_COLUMNS + ['FeaturesToScale']
 
-    # Encode category features to one-hot representation
-    if do_onehot:
-      indexed_category_columns = ['%s_Index' % column for column in self.CATEGORY_COLUMNS]
-      vec_category_columns = ['%s_Vector' % column for column in self.CATEGORY_COLUMNS]
-      for i in range(len(self.CATEGORY_COLUMNS)):
-          indexer = StringIndexer(inputCol=self.CATEGORY_COLUMNS[i],
-                                  outputCol=indexed_category_columns[i])
-          self.features_df = indexer.fit(self.features_df).transform(self.features_df)
+    # Index categorical features to have values from 0 to x
+    indexed_category_columns = ['%s_Index' % column for column in self.CATEGORY_COLUMNS]
+    vec_category_columns = ['%s_Vector' % column for column in self.CATEGORY_COLUMNS]
+    for i in range(len(self.CATEGORY_COLUMNS)):
+        indexer = StringIndexer(inputCol=self.CATEGORY_COLUMNS[i],
+                                outputCol=indexed_category_columns[i])
+        self.features_df = indexer.fit(self.features_df).transform(self.features_df)
+
+        # Encode category features to one-hot representation
+        if do_onehot:
           encoder = OneHotEncoder(inputCol=indexed_category_columns[i],
                                   outputCol=vec_category_columns[i])
           self.features_df = encoder.transform(self.features_df)
 
-      exclude_columns += self.CATEGORY_COLUMNS + indexed_category_columns
+    exclude_columns += self.CATEGORY_COLUMNS
+    if do_onehot:
+      exclude_columns += indexed_category_columns
 
     # Vectorize features
     feature_columns = [column for column in self.features_df.columns
