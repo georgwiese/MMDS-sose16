@@ -124,7 +124,8 @@ class DataLoader(object):
         column = self.ONE_HOT_COLUMNS[i]
         self.features_df = self.features_df.withColumn(column, self.features_df[column].cast(DoubleType()))
         encoder = OneHotEncoder(inputCol=column,
-                                outputCol=vec_category_columns[i])
+                                outputCol=vec_category_columns[i],
+                                dropLast=False)
         self.features_df = encoder.transform(self.features_df)
       exclude_columns += self.ONE_HOT_COLUMNS
 
