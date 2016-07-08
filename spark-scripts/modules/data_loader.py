@@ -6,6 +6,7 @@ so that it can be used for training or evaluation.
 import abc
 from datetime import datetime
 
+from pyspark.sql.types import DoubleType
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.ml.feature import VectorAssembler, StandardScaler, StringIndexer, OneHotEncoder
 
@@ -68,12 +69,13 @@ class DataLoader(object):
                    'TMIN_GHCND:USW00014732',
                    'TMIN_GHCND:USW00094728',
                    'TMIN_GHCND:USW00094789']
-  CATEGORY_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
+  ONE_HOT_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
   CATEGORY_VALUES_COUNT = {
     'Hour': 24,
     'Day': 31,
     'Month': 12,
-    'Weekday': 7
+    'Weekday': 7,
+    'Is_Holiday': 2
   }
 
   def __init__(self, spark_context, sql_context, features_file):
@@ -111,23 +113,20 @@ class DataLoader(object):
 
       exclude_columns += self.SCALE_COLUMNS + ['FeaturesToScale']
 
-    # Index categorical features to have values from 0 to x
-    indexed_category_columns = ['%s_Index' % column for column in self.CATEGORY_COLUMNS]
-    vec_category_columns = ['%s_Vector' % column for column in self.CATEGORY_COLUMNS]
-    for i in range(len(self.CATEGORY_COLUMNS)):
-        indexer = StringIndexer(inputCol=self.CATEGORY_COLUMNS[i],
-                                outputCol=indexed_category_columns[i])
-        self.features_df = indexer.fit(self.features_df).transform(self.features_df)
+    # Adopt categorical features that do not have a value range of [0, numCategories)
+    for column in ['Day', 'Month']:
+      self.features_df = self.features_df.withColumn(column, self.features_df[column] - 1)
 
-        # Encode category features to one-hot representation
-        if do_onehot:
-          encoder = OneHotEncoder(inputCol=indexed_category_columns[i],
-                                  outputCol=vec_category_columns[i])
-          self.features_df = encoder.transform(self.features_df)
-
-    exclude_columns += self.CATEGORY_COLUMNS
+    # Encode categorical features using one-hot encoding
     if do_onehot:
-      exclude_columns += indexed_category_columns
+      vec_category_columns = ['%s_Vector' % column for column in self.ONE_HOT_COLUMNS]
+      for i in range(len(self.ONE_HOT_COLUMNS)):
+        column = self.ONE_HOT_COLUMNS[i]
+        self.features_df = self.features_df.withColumn(column, self.features_df[column].cast(DoubleType()))
+        encoder = OneHotEncoder(inputCol=column,
+                                outputCol=vec_category_columns[i])
+        self.features_df = encoder.transform(self.features_df)
+      exclude_columns += self.ONE_HOT_COLUMNS
 
     # Vectorize features
     feature_columns = [column for column in self.features_df.columns
@@ -140,7 +139,7 @@ class DataLoader(object):
     if not do_onehot:
         self.categorical_features_info = {i:self.CATEGORY_VALUES_COUNT[feature_columns[i]]
                                           for i in range(len(feature_columns))
-                                          if feature_columns[i] in self.CATEGORY_COLUMNS}
+                                          if feature_columns[i] in self.CATEGORY_VALUES_COUNT.keys()}
 
     # Split into train and test data
     split_date = datetime(2015, 1, 1)
