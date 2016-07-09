@@ -29,7 +29,6 @@ Precomputes a table with the schema:
 - Hour: hour of the time
 - Day: day of the time
 - Month: month of the time
-- Year: year of the time
 - Weekday: weekday of the time
 - IsHoliday: bool that determines, whether the current date was a holiday or not
 
@@ -149,7 +148,6 @@ is_holiday_udf = udf(lambda date_time: date_time.date() in holidays.UnitedStates
 date_df = date_df.withColumn('Hour', func.hour(date_df.Time))
 date_df = date_df.withColumn('Day', func.dayofmonth(date_df.Time))
 date_df = date_df.withColumn('Month', func.month(date_df.Time))
-date_df = date_df.withColumn('Year', func.year(date_df.Time))
 date_df = date_df.withColumn('Weekday', weekday_udf(date_df.Time))
 date_df = date_df.withColumn('Is_Holiday', is_holiday_udf(date_df.Time))
 

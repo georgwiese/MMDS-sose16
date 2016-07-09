@@ -12,7 +12,7 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler, StringIndexer, O
 
 class DataLoader(object):
 
-  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
+  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count', 'Year']
   SCALE_COLUMNS = ['Pickup_Count_Dis_1h',
                    'Dropoff_Count_Dis_1h',
                    'Pickup_Count_Dis_4h',
