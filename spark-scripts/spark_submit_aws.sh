@@ -36,3 +36,6 @@ echo "$py_file $script_args" > logs/$logfile
   --driver-memory $spark_memory\
   --packages $spark_packages\
   $py_file $script_args &>> logs/$logfile
+
+s3_log_url="s3://mmds-taxi-ireland/logs"
+aws s3 cp logs/$logfile $s3_log_url/$logfile
