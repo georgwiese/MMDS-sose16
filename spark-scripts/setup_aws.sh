@@ -1,5 +1,5 @@
 # Use Python 2.7
-echo 'export $PYSPARK_PYTHON=python27' >> /root/spark/conf/spark-env.sh
+echo 'export PYSPARK_PYTHON=python27' >> /root/spark/conf/spark-env.sh
 ~/spark-ec2/copy-dir /root/spark/conf/spark-env.sh
 
 
