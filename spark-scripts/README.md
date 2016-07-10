@@ -5,6 +5,28 @@ To run the scripts, add this directory's `modules` folder to your `PYTHONPATH`:
 export PYTHONPATH=$PYTHONPATH:/path/to/MMDS-sose16/spark-scripts/modules
 ```
 
+# Setup on AWS
+
+Startup Cluster, for example:
+
+```bash
+spark-ec2 --instance-type=t2.medium --copy-aws-credentials --region=eu-west-1 -k awskey -i ~/Google\ Drive/mmds/AWS\ mmds-taxi\ user/awskey.pem -s 10 launch cluster
+```
+
+Then, login and execute:
+```bash
+screen
+
+git clone https://github.com/georgwiese/MMDS-sose16.git
+cd MMDS-sose16/spark-scripts
+
+export PYTHONPATH=$PYTHONPATH:~/MMDS-sose16/spark-scripts/modules
+
+# Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+
+./setup_aws.sh
+```
+
 # Starting Spark Scripts
 Spark scripts can be executed using the following command:
 ```sh
