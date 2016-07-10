@@ -27,6 +27,12 @@ export PYTHONPATH=$PYTHONPATH:~/MMDS-sose16/spark-scripts/modules
 ./setup_aws.sh
 ```
 
+Now, you can start a training, like so:
+
+```bash
+./train_evaluate.sh random_forest s3n://mmds-taxi-ireland/no_onehot s3n://mmds-taxi-ireland/models/random_forest evaluation/districts.txt random_forest aws
+```
+
 # Starting Spark Scripts
 Spark scripts can be executed using the following command:
 ```sh
