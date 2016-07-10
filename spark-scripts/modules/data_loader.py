@@ -115,7 +115,7 @@ class DataLoader(object):
 
     # Adopt categorical features that do not have a value range of [0, numCategories)
     for column in ['Day', 'Month']:
-        if columns in self.features_df.columns:
+        if column in self.features_df.columns:
             self.features_df = self.features_df.withColumn(column, self.features_df[column] - 1)
 
     # Encode categorical features using one-hot encoding
