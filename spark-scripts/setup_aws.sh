@@ -10,3 +10,6 @@ yes | yum install python27-devel
 pip2.7 install numpy
 
 ~/spark-ec2/copy-dir /usr/local/lib64/python2.7/site-packages/numpy
+
+# Update AWS CLI
+pip install --upgrade awscli
