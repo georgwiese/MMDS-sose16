@@ -12,7 +12,7 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler, StringIndexer, O
 
 class DataLoader(object):
 
-  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count', 'Year']
+  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
   SCALE_COLUMNS = ['Pickup_Count_Dis_1h',
                    'Dropoff_Count_Dis_1h',
                    'Pickup_Count_Dis_4h',
@@ -72,9 +72,8 @@ class DataLoader(object):
   ONE_HOT_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
   CATEGORY_VALUES_COUNT = {
     'Hour': 24,
-    'Day': 31,
-    'Month': 12,
-    'Weekday': 7,
+    'Day_Of_Week': 7,
+    'Day_Of_Year': 365,
     'Is_Holiday': 2
   }
 
@@ -114,7 +113,7 @@ class DataLoader(object):
       exclude_columns += self.SCALE_COLUMNS + ['FeaturesToScale']
 
     # Adopt categorical features that do not have a value range of [0, numCategories)
-    for column in ['Day', 'Month']:
+    for column in ['Day_Of_Year', 'Day', 'Month']:
         if column in self.features_df.columns:
             self.features_df = self.features_df.withColumn(column, self.features_df[column] - 1)
 
