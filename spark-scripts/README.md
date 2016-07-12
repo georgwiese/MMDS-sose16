@@ -22,9 +22,10 @@ cd MMDS-sose16/spark-scripts
 
 export PYTHONPATH=$PYTHONPATH:~/MMDS-sose16/spark-scripts/modules
 
-# Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-
 ./setup_aws.sh
+
+# Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+aws configure
 ```
 
 Now, you can start a training, like so:
