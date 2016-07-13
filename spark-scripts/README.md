@@ -19,13 +19,19 @@ screen
 
 git clone https://github.com/georgwiese/MMDS-sose16.git
 cd MMDS-sose16/spark-scripts
+chmod +x setup_aws.sh spark_submit_aws.sh train_evaluate.sh
 
 export PYTHONPATH=$PYTHONPATH:~/MMDS-sose16/spark-scripts/modules
 
 ./setup_aws.sh
 
 # Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-aws configure
+aws configure set access_key $AWS_ACCESS_KEY_ID
+aws configure set secret_key $AWS_SECRET_ACCESS_KEY
+aws configure set region eu-west-1
+
+# Adapt amount of memory to use per executor
+nano spark_submit_aws.sh
 ```
 
 Now, you can start a training, like so:
