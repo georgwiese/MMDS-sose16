@@ -35,6 +35,7 @@ echo "$py_file $script_args" > logs/$logfile
   --executor-memory $spark_memory\
   --driver-memory $spark_memory\
   --packages $spark_packages\
+  --conf spark.eventLog.enabled=false\
   $py_file $script_args &>> logs/$logfile
 
 s3_log_url="s3://mmds-taxi-ireland/logs"
