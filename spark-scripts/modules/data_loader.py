@@ -73,7 +73,7 @@ class DataLoader(object):
   CATEGORY_VALUES_COUNT = {
     'Hour': 24,
     'Day_Of_Week': 7,
-    'Day_Of_Year': 365,
+    'Day_Of_Year': 366,
     'Is_Holiday': 2
   }
 
