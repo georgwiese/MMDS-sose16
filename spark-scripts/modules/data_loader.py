@@ -69,7 +69,7 @@ class DataLoader(object):
                    'TMIN_GHCND:USW00014732',
                    'TMIN_GHCND:USW00094728',
                    'TMIN_GHCND:USW00094789']
-  ONE_HOT_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
+  ONE_HOT_COLUMNS = ['Hour', 'Day_Of_Week', 'Day_Of_Year']
   CATEGORY_VALUES_COUNT = {
     'Hour': 24,
     'Day_Of_Week': 7,
