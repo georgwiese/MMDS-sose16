@@ -21,6 +21,10 @@ MODEL_TYPE_TO_CLASS = {
   "random_forest": RandomForestModel
 }
 
+MEASURE_TRAIN_ERROR = False
+SAMPLING_FRACTION = 1.0
+SAMPLING_SEED = 1234
+
 # Get file paths from arguments
 if len(sys.argv) != 6:
   print "Usage: evaluate.py FEATURES_FILE MODEL_FOLDER MODEL_TYPE DISTRICTS_FILE RESULT_PATH"
@@ -44,9 +48,14 @@ for district in read_districts_file(districts_file):
   print("Evaluating district: %s" % str(district))
   lat, lon = district
 
+  data = data_loader.train_df if MEASURE_TRAIN_ERROR else data_loader.test_df
+  if SAMPLING_FRACTION != 1.0:
+    data = data.sample(False, SAMPLING_FRACTION, SAMPLING_SEED)
+
   model = ModelClass.load(spark_context,
                           '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
-  predictions_labels = [(float(model.predict(point.features)), point.label) for point in data_loader.get_test_data(district).collect()]
+  predictions_labels = [(float(model.predict(point.features)), point.label)
+                        for point in data_loader.df_to_labeled_points(data, district).collect()]
   print(predictions_labels[:10])
 
   # Compute Proportional Errors and Squared Proportional Errors
@@ -68,11 +77,12 @@ for district in read_districts_file(districts_file):
   print("MPE = %s" % mpe)
 
   # Write predictions_labels CSV
-  filename = os.path.join(result_path, "%s_%s_%s.csv" % (model_name, str(lat), str(lon)))
-  times = data_loader.get_data_for_district(data_loader.test_df, district) \
+  times = data_loader.get_data_for_district(data, district) \
           .select("Time") \
           .map(lambda row: row.Time) \
           .collect()
+
+  filename = os.path.join(result_path, "%s_%s_%s.csv" % (model_name, str(lat), str(lon)))
   with open(filename, "w") as f:
     f.write("time, prediction, label\n")
 
