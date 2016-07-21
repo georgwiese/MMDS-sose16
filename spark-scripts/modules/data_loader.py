@@ -12,7 +12,7 @@ from pyspark.ml.feature import VectorAssembler, StandardScaler, StringIndexer, O
 
 class DataLoader(object):
 
-  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count', 'Year']
+  EXCLUDE_COLUMNS = ['Time', 'Lat', 'Lon', 'Pickup_Count']
   SCALE_COLUMNS = ['Pickup_Count_Dis_1h',
                    'Dropoff_Count_Dis_1h',
                    'Pickup_Count_Dis_4h',
@@ -69,12 +69,13 @@ class DataLoader(object):
                    'TMIN_GHCND:USW00014732',
                    'TMIN_GHCND:USW00094728',
                    'TMIN_GHCND:USW00094789']
-  ONE_HOT_COLUMNS = ['Hour', 'Day', 'Month', 'Weekday']
+  ONE_HOT_COLUMNS = ['Hour', 'Day', 'Month', 'Day_Of_Week', 'Day_Of_Year']
   CATEGORY_VALUES_COUNT = {
     'Hour': 24,
     'Day': 31,
     'Month': 12,
-    'Weekday': 7,
+    'Day_Of_Week': 7,
+    'Day_Of_Year': 366,
     'Is_Holiday': 2
   }
 
@@ -114,7 +115,7 @@ class DataLoader(object):
       exclude_columns += self.SCALE_COLUMNS + ['FeaturesToScale']
 
     # Adopt categorical features that do not have a value range of [0, numCategories)
-    for column in ['Day', 'Month']:
+    for column in ['Day', 'Month', 'Day_Of_Year']:
         if column in self.features_df.columns:
             self.features_df = self.features_df.withColumn(column, self.features_df[column] - 1)
 
@@ -123,11 +124,12 @@ class DataLoader(object):
       vec_category_columns = ['%s_Vector' % column for column in self.ONE_HOT_COLUMNS]
       for i in range(len(self.ONE_HOT_COLUMNS)):
         column = self.ONE_HOT_COLUMNS[i]
-        self.features_df = self.features_df.withColumn(column, self.features_df[column].cast(DoubleType()))
-        encoder = OneHotEncoder(inputCol=column,
-                                outputCol=vec_category_columns[i],
-                                dropLast=False)
-        self.features_df = encoder.transform(self.features_df)
+        if column in self.features_df.columns:
+            self.features_df = self.features_df.withColumn(column, self.features_df[column].cast(DoubleType()))
+            encoder = OneHotEncoder(inputCol=column,
+                                    outputCol=vec_category_columns[i],
+                                    dropLast=False)
+            self.features_df = encoder.transform(self.features_df)
       exclude_columns += self.ONE_HOT_COLUMNS
 
     # Vectorize features

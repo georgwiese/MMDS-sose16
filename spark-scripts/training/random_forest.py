@@ -6,6 +6,7 @@ The models are stored in the specified {MODEL_FOLDER} using the following file n
 
 import sys
 import time
+import operator
 from pyspark.mllib.tree import RandomForest
 
 from spark_application import create_spark_application
@@ -22,14 +23,18 @@ spark_context, sql_context = create_spark_application("train_random_forest")
 data_loader = DataLoader(spark_context, sql_context, features_file)
 data_loader.initialize(do_scaling=False, do_onehot=False)
 
+maxBins = 32
 categorical_features_info = data_loader.get_categorical_features_info()
+if categorical_features_info and max(categorical_features_info.values()) > maxBins:
+    maxBins = max(categorical_features_info.values())
 for lat, lon in read_districts_file(districts_file):
   print("Training District: %f, %f" % (lat, lon))
   start = time.time()
   model = RandomForest.trainRegressor(data_loader.get_train_data((lat, lon)),
                                       categoricalFeaturesInfo=categorical_features_info,
                                       numTrees=5,
-                                      maxDepth=15)
+                                      maxDepth=15,
+                                      maxBins=maxBins)
   model.save(spark_context,
              '%s/model_%s_%s' % (model_folder, str(lat), str(lon)))
   print("Done training district. Took %f s." % (time.time() - start))
