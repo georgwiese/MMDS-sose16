@@ -27,7 +27,7 @@ TODO: Name & Link to the dataset
 
 The dataset includes daily weather summaries of 11 station, distributed around NYC as follows:
 
-![Map weather stations](images/weather_stations.png =250x)
+<img src="images/weather_stations.png" alt="Map weather stations" style="width: 250px;"/>
 
 The information includes:
 
