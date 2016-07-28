@@ -59,11 +59,30 @@ We'll to into detail about all the stages in the following sections.
 
 ## Results
 
-As part of 
+Our evaluation consists of two parts:
+First, we evaluate the model quality.
+Second, we evaluate the scalability of our approach.
 
 ### Model Evaluation
 
 ### Scale-out Experiments
+
+The first point we would like to make wih regard to scalability ist that we think of our approach as inherently scalable:
+Since we train one model per district and all models can be trained independently of one another, we can achieve a linear scale-up simply by training hundreds of models in parallel.
+Nevertheless, we tested the scalability of our random forest training by doing scale-out experiments.
+
+For this, we used [Amazon Web Services](https://aws.amazon.com/) EC2 in conjunction with the [spark-ec2](http://spark.apache.org/docs/latest/ec2-scripts.html) script to spin up the machines and provision the cluster.
+We used the *r3.large* instance type, which has two cores and around 15GB of main memory.
+
+By varying the number of executors and measuring the training time for one model (i.e., one district), we obtained the following runtime chart:
+
+![Runtime chart](images/scale_out/runtime.png)
+
+In the speedup chart (all runtimes divided by the runtime of five nodes), we observe that our speedup is superlinear initially and then flattens:
+
+![Speedup chart](images/scale_out/speedup.png)
+
+We conclude that optimal number of executors for hour task is between 10 and 20 nodes.
 
 ## <a name="getting_started"></a> Getting Started
 
