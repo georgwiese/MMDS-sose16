@@ -39,9 +39,15 @@ You can find visualisations of basic statistics of this dataset in our Notebook 
 
 ### Event Dataset
 
+TODO
+
 ## Implementation
 
-TODO: Pipeline overview
+Our training pipeline consists of several stages, illustrated in the following graphic:
+
+![Training Pipeline](images/pipeline.png)
+
+We'll to into detail about all the stages in the following sections.
 
 ### Preprocessing
 
