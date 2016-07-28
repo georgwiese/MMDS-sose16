@@ -8,7 +8,11 @@ If you simply want to get started, skip to the [Getting Started](#getting_starte
 
 ## Datasets
 
+In this section, we present the dataset used for training hour system.
+
 ### TLC Trip Record Data
+
+![Pickups by hour heatmap](images/heatmaps/pickups_by_hour.gif)
 
 ### Weather Dataset
 
@@ -32,7 +36,6 @@ TODO: Pipeline overview
 
 ### Scale-out Experiments
 
-[getting_started]
 ## <a name="getting_started"></a> Getting Started
 
 ```bash
