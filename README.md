@@ -23,7 +23,7 @@ The following shows a heatmap of the average pickup frequency by hour:
 
 ### Weather Dataset
 
-TODO: Name & Link to the dataset
+TODO(soeren): Name & Link to the dataset
 
 The dataset includes daily weather summaries of 11 station, distributed around NYC as follows:
 
@@ -39,7 +39,7 @@ You can find visualisations of basic statistics of this dataset in our Notebook 
 
 ### Event Dataset
 
-TODO
+TODO(fabian, soeren)
 
 ## Implementation
 
@@ -51,11 +51,34 @@ We'll to into detail about all the stages in the following sections.
 
 ### Preprocessing
 
+TODO(soeren)
+
 ### Feature Extraction
+
+TODO(fabian)
 
 ### Training
 
+TODO(georg)
+
+- One model per district
+
+#### Linear Regression
+
+TODO(georg)
+
+#### Random Forest
+
+TODO(soeren)
+- Explain hyperparemeters
+- Hyperparameter experiments
+
+TODO(georg)
+- Tree Analysis
+
 ### Evaluation Pipeline
+
+TODO(georg)
 
 ## Results
 
@@ -64,6 +87,8 @@ First, we evaluate the model quality.
 Second, we evaluate the scalability of our approach.
 
 ### Model Evaluation
+
+TODO(georg)
 
 ### Scale-out Experiments
 
