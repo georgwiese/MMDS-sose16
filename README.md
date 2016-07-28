@@ -4,7 +4,7 @@ As part of the "Mining Massive Datasets" Seminar of the [HPI](http://hpi.de/), t
 We used the [TLC Trip Record Data](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml), as well as weather and event datasets, to train regression models using [Apache Spark](http://spark.apache.org/).
 
 In this document, we will describe the datasets we used, our implementation, and our results.
-If you simply want to get started, skip to the [Getting Started][getting_started] section of this document.
+If you simply want to get started, skip to the [Getting Started](getting_started) section of this document.
 
 ## Datasets
 
@@ -33,7 +33,7 @@ TODO: Pipeline overview
 ### Scale-out Experiments
 
 [getting_started]
-## Getting Started
+## <a name="getting_started"></a> Getting Started
 
 ```bash
 pip install -r requirements.txt
