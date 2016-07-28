@@ -18,9 +18,24 @@ The provided information includes the start & end times as well as start & end l
 You can find some basic statistics in our Taxi data notebook (TODO: Link).
 Furthermore, we plotted heatmaps of the pickup frequencies using our [Heatmap Visualizer](heatmap-visualizer).
 The following shows a heatmap of the average pickup frequency by hour:
+
 ![Pickups by hour heatmap](images/heatmaps/pickups_by_hour.gif)
 
 ### Weather Dataset
+
+TODO: Name & Link to the dataset
+
+The dataset includes daily weather summaries of 11 station, distributed around NYC as follows:
+
+![Map weather stations](images/weather_stations.png)
+
+The information includes:
+
+- Precipitation
+- Min/Max temperature
+- Wind speed
+
+You can find visualisations of basic statistics of this dataset in our Notebook (TODO: Link).
 
 ### Event Dataset
 
