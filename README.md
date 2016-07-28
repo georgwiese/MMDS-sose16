@@ -15,7 +15,7 @@ In this section, we present the dataset used for training hour system.
 The [TLC Trip Record Dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) contains the taxi rides in NYC from 2009 to 2015.
 The provided information includes the start & end times as well as start & end locations.
 
-You can find some basic statistics in our Taxi data notebook (TODO: Link).
+You can find some basic statistics in our [taxi statistics notebook](notebooks/taxi_statistics.ipynb).
 Furthermore, we plotted heatmaps of the pickup frequencies using our [Heatmap Visualizer](heatmap-visualizer).
 The following shows a heatmap of the average pickup frequency by hour:
 
@@ -23,9 +23,7 @@ The following shows a heatmap of the average pickup frequency by hour:
 
 ### Weather Dataset
 
-TODO(soeren): Name & Link to the dataset
-
-The dataset includes daily weather summaries of 11 station, distributed around NYC as follows:
+The [NOAA Daily Summaries Dataset](http://www.ncdc.noaa.gov/cdo-web/datasets) contains daily weather summaries of 11 station in and around NYC from 2009 to 2015. The weather stations are distributed around NYC as follows:
 
 ![Map of weather stations](images/weather_stations.png)
 
@@ -35,7 +33,9 @@ The information includes:
 - Min/Max temperature
 - Wind speed
 
-You can find visualisations of basic statistics of this dataset in our Notebook (TODO: Link).
+You can find visualisations of basic statistics of this dataset in our [statistics notebook](notebooks/weather_statistics.ipynb). 
+
+We initally also took the *NOAA Hourly Precipitation* dataset into account, but since it is highly incomplete and has many missing values (as shown in the notebook), we did not use it for the project. 
 
 ### Event Dataset
 
