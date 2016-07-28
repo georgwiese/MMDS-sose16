@@ -10,7 +10,7 @@ If you simply want to get started, skip to the [Getting Started](#getting_starte
 
 In this section, we present the dataset used for training hour system.
 
-### TLC Trip Record Data
+### TLC Trip Record Datato
 
 The [TLC Trip Record Dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) contains the taxi rides in NYC from 2009 to 2015.
 The provided information includes the start & end times as well as start & end locations.
@@ -47,11 +47,33 @@ Our training pipeline consists of several stages, illustrated in the following g
 
 ![Training Pipeline](images/pipeline.png)
 
-We'll to into detail about all the stages in the following sections.
+We'll go into detail about all the stages in the following sections.
 
 ### Preprocessing
 
-TODO(soeren)
+There were three general goals of preprocessing of our datasets. First, time and coordinate values get discretized. For the time, we confine ourselves on hours, so minutes and seconds get discarded. Further on, we divided NYC into districts of a grid by rounding latitude and longitude values to two decimal places.
+
+Second, we do some simple data cleansing and standardization. Outliers and invalid data are removed and different time formats are parsed into a common one. 
+
+Finally, the datasets get transformed into a similar base schema, which makes it easier to join the three preprocessed datasets together at the end when building the feature vectors. 
+
+We developed a preprocessing script for each of the three datasets, which can be found in the [spark-scripts/preprocessing](spark-scripts/preprocessing/) directory.
+
+#### Taxi Dataset
+
+The original taxi datasets contains a single row per taxi trip including pickup and dropoff coordinates and times. We had to accumulate the pickups and dropoffs, so that in the preprocessed dataset for each district and hour the number of pickups and dropoffs is stored. 
+
+#### Weather Dataset
+
+The original weather dataset has one row per station and day in the time period. To match the base schema, we had to transpose the weather stations from rows to columns, so that for each day the preprocessed dataset contains the four measurement columns (precipitation, min/max temperature, average wind speed) for each of the 11 weather stations. 
+
+Additionally, missing values are a problem in the original dataset. There are days, on which some stations do not provide all measurements. In this instance, we take the average of the measurements from the three nearest stations, which have a value for that day. In the rare case that no station at all has a measurement, we take the average over the complete time period as value.
+
+#### Event Dataset
+
+Similar to the taxi data, the event dataset needs to get accumulated, since it contains one row per event. The resulting dataset contains a vector for each hour in the time period, which has an entry for each venue in the dataset. This vector stores the number of events taking place at the particular venues in the respective hour. 
+
+We are using this vector implementation instead of having a column per venue to decrease the memory consumption. For one thing, we do not have the memory overhead of storing metadata like the data type for each column. For another thing, we are using sparse vectors which saves a lot of memory because there are only a few events happening at the same time in the dataset. 
 
 ### Feature Extraction
 
