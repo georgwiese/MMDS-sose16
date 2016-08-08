@@ -93,7 +93,7 @@ A linear regression model attempts to predict the target values by finding weigh
 Because linear regression models treat all features as numeric features, we use one-hot encoding for categorical features for these models.
 
 The Model is then trained with Stochastic Gradient Descent, using Spark's `LinearRegressionWithSGD` class.
-The implementation can be found in the [`linear_regression.py`](spark_scripts/training/linear_regression.py) script.
+The implementation can be found in the [`linear_regression.py`](spark-scripts/training/linear_regression.py) script.
 The main parameters of this method are the learning rate (called `step` in The Spark API) and the number of iterations.
 
 We tried several different learning rates and iterations.
@@ -106,7 +106,7 @@ A random forest model builds a number of (binary) decision trees for regression 
 These models can naturally deal with categorical data.
 Therefore, we do not perform one-hot encoding on our categorical features, and instead pass those features directly to the model.
 
-The random forest is implemented using Spark's `RandomForest.trainRegressor()` method in our [`random_forest.py`](spark_scripts/training/random_forest.py) script.
+The random forest is implemented using Spark's `RandomForest.trainRegressor()` method in our [`random_forest.py`](spark-scripts/training/random_forest.py) script.
 The main parameters include the number of trees to use and the maximum tree depth.
 
 ##### Random Forest Experiments
