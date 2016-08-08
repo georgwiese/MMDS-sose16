@@ -118,7 +118,7 @@ TODO(soeren)
 In order to better understand our random forest models, we performed an analysis on one of the models we trained.
 
 For this, we looked at all features and computed an *importance score* as follows:
-We define the *node value* of a decision tree node to be: *2<sup>-level</sup>*
+We define the *node value* of a decision tree node to be *2<sup>-level</sup>*.
 Assuming that each node splits the data in half, this node fraction corresponds to the fraction of data that is affected by the decision made in this node.
 The *importance score* of a feature is then the sum of all node values where the feature is used.
 
@@ -174,7 +174,28 @@ Second, we evaluate the scalability of our approach.
 
 ### Model Evaluation
 
-TODO(georg)
+In general, we observed that our random forest models performed much better than the best linear regression models (RMSE ~33 vs. ~62, averaged over all evaluation districts).
+We also found that the Stochastic Gradient Descent training was less stable than the random forest training.
+For these reason, we will focus on the random forest models in this section.
+
+The following plots show the RMSE and MPE values of the random forest models for the evaluation distrcts:
+
+![RMSE and MPE of the evaluation districts](images/model_evaluation/results.png)
+
+It becomes clear that generally the variance of these values is quite high.
+The average RMSE is 33 with a standard deviation of 32.
+The average MPE is 31% with a standard deviation of 20%.
+
+Also, the two error measures seem to complement each other, which can be explained by the different scales of the pickup frequencies among the districts:
+If pickup frequency is low, it is easy to achive a low RMSE value, but harder to perform well on the MPE measure.
+The opposite is true for high frequency districts.
+
+However, if predicted & actual values are plotted side-by-side, one can see that the prediction curve quite accurately tracks the actual curve.
+The following chart shows a typical week of one of the districts.
+
+![Prediction vs. actual pickup count](images/model_evaluation/typical_week.png)
+
+A more detailed evaluation, including more prediction-vs-actual plots can be found in our [`model_evaluation`](notebooks/model_evaluation.ipynb) notebook.
 
 ### Scale-out Experiments
 
