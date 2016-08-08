@@ -178,7 +178,7 @@ In general, we observed that our random forest models performed much better than
 We also found that the Stochastic Gradient Descent training was less stable than the random forest training.
 For these reason, we will focus on the random forest models in this section.
 
-The following plots show the RMSE and MPE values of the random forest models for the evaluation distrcts:
+The following plots show the RMSE and MPE values of the random forest models for the evaluation districts, using 5 trees with a maximum depth of 15:
 
 ![RMSE and MPE of the evaluation districts](images/model_evaluation/results.png)
 
@@ -218,8 +218,17 @@ We conclude that optimal number of executors for hour task is between 10 and 20 
 
 ## <a name="getting_started"></a> Getting Started
 
-TODO(georg)
+Start by installing the necessary requirements:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+Next, you can look into different parts of this project.
+You can find detailed instructions in the READMEs of each of these directories.
+Here is an overview of the most relevant directories:
+
+- [`heatmap-visualizer`](heatmap-visualizer): A small tool that uses the Google Maps API to generate (animated) heatmaps from a simple JSON-based file format.
+- [`notebooks`](notebooks): Our collection of Jupyter Notebooks. Contains dataset statistics and a model analysis.
+- [`scripts`](scripts): A collection of bash/python scripts to crawl, download & sample our datasets.
+- [`spark-scripts`](spark-scripts): All of our spark jobs. The directory is organized by stages of our pipeline (contains `preprocessing`, `training` and `evaluation` subdirectories).
