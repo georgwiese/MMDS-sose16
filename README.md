@@ -111,7 +111,20 @@ The main parameters include the number of trees to use and the maximum tree dept
 
 ##### Random Forest Experiments
 
-TODO(soeren)
+Our first baseline model was trained with 5 trees and a maximum depth of 15. To improve the accuracy of the model, we tested different training parameters and compared the average RMSE. All of the experiments were executed on AWS using 10 *r3.large* executors with 2 cores and 15GB RAM each. We did the training for 10 districts and calculated the average RMSE for comparison. 
+
+The results are shown in the following table. The first row is the baseline. For the other experiments, we also calculated the percentual change of the RMSE regarding the baseline.
+
+| Number of trees | Maximum depth | Training time (hours) | Average RMSE | Average RMSE change |
+|-----------------|---------------|-----------------------|--------------|---------------------|
+| 5               | 15            | 08:24                 | 32.7193      | *n/a*               |
+| 10              | 17            | 24:39                 | 32.8164      | +0.31%              |
+| 10              | 10            | 04:06                 | 31.2672      | -4.43%              |
+| 20              | 10            | 05:06                 | 32.1055      | -1.86%              |
+
+The first thing we did was to increase the complexity of the model by incrementing the number of trees and maximum depth. The result was a slightly raise of the error. Since this experiment was not successful and to prevent overfitting, we lowered the maximum depth to 10, which resulted in an error improvement by 4.43% regarding the baseline. We assumed that some important features were not used for splits in the decision trees, because the feature vector contains a large number of features and the trained models are rather small. Therefore, we kept the depth of 10, but increased the number of trees to 20 in the last experiment. Unfortunately, the assumption was not correct, since the error was larger than in the previous experiment. 
+
+Since the errors did not really changed much among the different experiments, it was hard for us to determine, which parameters are suitable for training. Also our time and budget was limited, so the model with 10 trees and a maximum depth of 10 is the best one we could accomplish in the project.
 
 ##### Random Forest Model Analysis
 
