@@ -118,7 +118,7 @@ TODO(soeren)
 In order to better understand our random forest models, we performed an analysis on one of the models we trained.
 
 For this, we looked at all features and computed an *importance score* as follows:
-We define the *node value* of a decision tree node to be: $$2^{-level}$$
+We define the *node value* of a decision tree node to be: *2<sup>-level</sup>*
 Assuming that each node splits the data in half, this node fraction corresponds to the fraction of data that is affected by the decision made in this node.
 The *importance score* of a feature is then the sum of all node values where the feature is used.
 
