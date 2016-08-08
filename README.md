@@ -147,7 +147,19 @@ The full analysis can be found in our [`analyze_random_forest`](notebooks/analyz
 
 ### Evaluation Pipeline
 
-TODO(georg)
+For all evaluations (including those mentioned in the training section), we our data into training data (everything before 2015) and evaluation data (all of 2015).
+This split simulates the scenario where we do have ground-truth data for the past to train models that perform well in the future.
+
+Because training on all districts for all experiments would have been too time-consuming, we used 10 evaluation districts.
+These have been sampled from the top 200 districts in terms of pickup frequency.
+All of them are in or close to Manhattan, as can be seen in this map:
+
+![Map of evaluation districts](images/evaluation_districts.png)
+
+For evaluation, we report two error measures:
+
+- **Root-Mean-Square Error (RMSE)**: The root of the mean of *error<sup>2</sup>*
+- **Mean Proportional Error (MPE)**: The mean of *|error| / actual*
 
 ## Results
 
