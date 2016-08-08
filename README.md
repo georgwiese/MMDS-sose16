@@ -116,30 +116,35 @@ TODO(soeren)
 ##### Random Forest Model Analysis
 
 In order to better understand our random forest models, we performed an analysis on one of the models we trained.
-For this, we looked at the features that are looked at at the top levels of the decsions trees.
-These should be the most important features to make the prediction.
 
-These are all features that occurr at the top 4 levels of the trees:
+For this, we looked at all features and computed an *importance score* as follows:
+We define the *node value* of a decision tree node to be: $$2^{-level}$$
+Assuming that each node splits the data in half, this node fraction corresponds to the fraction of data that is affected by the decision made in this node.
+The *importance score* of a feature is then the sum of all node values where the feature is used.
+
+According to this score, these are the 20 most important features with their corresponding score:
 
 ```
-['Day_Of_Week',
- 'Day_Of_Year',
- 'Dropoff_Count_Dis_1h',
- 'Dropoff_Count_Dis_4h',
- 'Dropoff_Count_Nb_1h',
- 'Dropoff_Count_Nb_4h',
- 'Dropoff_Count_Nyc_1h',
- 'Dropoff_Count_Nyc_4h',
- 'Hour',
- 'Pickup_Count_Dis_1h',
- 'Pickup_Count_Dis_4h',
- 'Pickup_Count_Nb_1h',
- 'Pickup_Count_Nb_4h',
- 'Pickup_Count_Nyc_1h',
- 'Pickup_Count_Nyc_4h',
- 'Venue 1326 (2)',
- 'Venue 1910 (2)',
- 'Venue 2020 (-1)']
+[('Pickup_Count_Nb_1h', 4.7470703125),
+ ('Pickup_Count_Dis_1h', 4.1552734375),
+ ('Pickup_Count_Nyc_4h', 2.3056640625),
+ ('Pickup_Count_Nyc_1h', 1.87109375),
+ ('Hour', 1.8310546875),
+ ('Dropoff_Count_Nyc_4h', 1.4365234375),
+ ('Pickup_Count_Nb_4h', 1.4033203125),
+ ('Dropoff_Count_Nyc_1h', 1.2607421875),
+ ('Pickup_Count_Dis_4h', 1.2177734375),
+ ('Dropoff_Count_Nb_4h', 1.0439453125),
+ ('Day_Of_Week', 1.0185546875),
+ ('Dropoff_Count_Dis_4h', 0.8076171875),
+ ('IsHoliday', 0.7763671875),
+ ('Day_Of_Year', 0.7158203125),
+ ('Dropoff_Count_Dis_1h', 0.57421875),
+ ('Dropoff_Count_Nb_1h', 0.3056640625),
+ ('Venue 1972 (-3)', 0.2568359375),
+ ('AWND_GHCND:US1NJBG0018', 0.244140625),  # (this is a weather feature)
+ ('Venue 428 (-2)', 0.1328125),
+ ('Venue 1755 (-3)', 0.072265625)]
 ```
 
 The full analysis can be found in our [`analyze_random_forest`](notebooks/analyze_random_forest.ipynb) notebook.
@@ -191,6 +196,8 @@ In the speedup chart (all runtimes divided by the runtime of five nodes), we obs
 We conclude that optimal number of executors for hour task is between 10 and 20 nodes.
 
 ## <a name="getting_started"></a> Getting Started
+
+TODO(georg)
 
 ```bash
 pip install -r requirements.txt
