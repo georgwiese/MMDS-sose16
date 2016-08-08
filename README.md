@@ -79,24 +79,71 @@ We are using this vector implementation instead of having a column per venue to 
 
 TODO(fabian)
 
+- One model per district
+- discretization
+
 ### Training
 
-TODO(georg)
-
-- One model per district
+Using our features from the previous section, we trained two kinds regression models: A linear regeression and a random forest regression model.
+Since we are training one model per district, we trained multiple models for each of the two.
 
 #### Linear Regression
 
-TODO(georg)
+A linear regression model attempts to predict the target values by finding weights such that the prediction is computed as a weighted sum of the feature vector entries.
+Because linear regression models treat all features as numeric features, we use one-hot encoding for categorical features for these models.
+
+The Model is then trained with Stochastic Gradient Descent, using Spark's `LinearRegressionWithSGD` class.
+The implementation can be found in the [`linear_regression.py`](spark_scripts/training/linear_regression.py) script.
+The main parameters of this method are the learning rate (called `step` in The Spark API) and the number of iterations.
+
+We tried several different learning rates and iterations.
+However, we found that our best linear regression result was significantly outperformed by our best random forest result (RMSE of ~33 vs. RMSE of ~62).
+For this reason, we focused on the random forest model for further experiments.
 
 #### Random Forest
 
-TODO(soeren)
-- Explain hyperparemeters
-- Hyperparameter experiments
+A random forest model builds a number of (binary) decision trees for regression and combines their predictions at prediction time.
+These models can naturally deal with categorical data.
+Therefore, we do not perform one-hot encoding on our categorical features, and instead pass those features directly to the model.
 
-TODO(georg)
-- Tree Analysis
+The random forest is implemented using Spark's `RandomForest.trainRegressor()` method in our [`random_forest.py`](spark_scripts/training/random_forest.py) script.
+The main parameters include the number of trees to use and the maximum tree depth.
+
+##### Random Forest Experiments
+
+TODO(soeren)
+
+##### Random Forest Model Analysis
+
+In order to better understand our random forest models, we performed an analysis on one of the models we trained.
+For this, we looked at the features that are looked at at the top levels of the decsions trees.
+These should be the most important features to make the prediction.
+
+These are all features that occurr at the top 4 levels of the trees:
+
+```
+['Day_Of_Week',
+ 'Day_Of_Year',
+ 'Dropoff_Count_Dis_1h',
+ 'Dropoff_Count_Dis_4h',
+ 'Dropoff_Count_Nb_1h',
+ 'Dropoff_Count_Nb_4h',
+ 'Dropoff_Count_Nyc_1h',
+ 'Dropoff_Count_Nyc_4h',
+ 'Hour',
+ 'Pickup_Count_Dis_1h',
+ 'Pickup_Count_Dis_4h',
+ 'Pickup_Count_Nb_1h',
+ 'Pickup_Count_Nb_4h',
+ 'Pickup_Count_Nyc_1h',
+ 'Pickup_Count_Nyc_4h',
+ 'Venue 1326 (2)',
+ 'Venue 1910 (2)',
+ 'Venue 2020 (-1)']
+```
+
+The full analysis can be found in our [`analyze_random_forest`](notebooks/analyze_random_forest.ipynb) notebook.
+
 
 ### Evaluation Pipeline
 
