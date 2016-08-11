@@ -1,6 +1,6 @@
 # Given a directory of taxi data, create <year>_sample.csv files that contains
 # 1% of the original tuples.
-# Expacts files to be named yellow_tripdata_<year>-<month>.csv
+# Expects files to be named yellow_tripdata_<year>-<month>.csv
 
 import sys
 import os

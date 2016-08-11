@@ -1,4 +1,6 @@
-# Given a CSV which contains a specific year, this script filters a specific day or range of days
+# This script was utilized for sampling days or picking one specific sample day for our proof of concept.
+#  Given a CSV which contains a specific year, this script filters a specific day or range of days
+# The challenge was to differentiate between pickups that start at a certain day und dropoffs that end at a specific day, due to having an efficient performance.
 
 import sys
 
@@ -13,12 +15,12 @@ if not len(sys.argv) > 3:
 else: [input_csv, startDate, endDate] = sys.argv[1:]
 
 
-
-
 first = True
 rangeStarted = False
 endDateReached = False
 with open(output_filename, "w") as output_file:
+
+  # step through all lines of the input_csv and continue/break when pickup and dropoff date are out of the scope
   with open(input_csv) as input_file:
     for line in input_file:
 

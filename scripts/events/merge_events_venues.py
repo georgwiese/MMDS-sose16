@@ -1,4 +1,5 @@
 # Merges crawled event and venue data.
+# Merging is done by mapping the geolocations of event addresses obtained from Google Maps to the closest venues.
 
 import sys
 import math

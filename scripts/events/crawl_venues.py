@@ -1,4 +1,6 @@
 # Crawls event venue data from https://seatgeek.com.
+# The url_format given below allows to crawl all event venues situated in New York known by seatgeek.com.
+# parameters: <output_file>
 
 import sys
 import math

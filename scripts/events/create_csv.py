@@ -1,3 +1,6 @@
+# parses the json file obtained by merge_events_venues.py to a csv file
+# parameters: jsonInputFile, csvOutputFile
+
 import sys
 import csv
 import json

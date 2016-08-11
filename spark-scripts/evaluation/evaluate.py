@@ -62,9 +62,9 @@ for district in read_districts_file(districts_file):
   pes = [abs(pred - label) / (label if label > 0 else 1)
          for pred, label in predictions_labels]
   spes = [pe * pe for pe in pes]
-  mspe = np.mean(spes)
-  mpe = np.mean(pes)
-  rmspe = math.sqrt(mspe)
+  mspe = np.mean(spes) # means squared proportional error
+  mpe = np.mean(pes) # mean proportional error
+  rmspe = math.sqrt(mspe) # root mean squared proportional error
 
   metrics = RegressionMetrics(spark_context.parallelize(predictions_labels))
   mse, rmse = metrics.meanSquaredError, metrics.rootMeanSquaredError

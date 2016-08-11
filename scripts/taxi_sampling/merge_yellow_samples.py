@@ -1,4 +1,7 @@
-# Merges data/yello_samples/<year>_sample.csv files into one
+# As the sample.py creates samples from different yellow taxi data files having different time periods,
+# those samples still need to be merged to have one big sample file.
+#
+# This script merges data/yello_samples/<year>_sample.csv files into one
 # data/yellow_sample.csv file by concatenating them and only keeping relevant
 # columns.
 
