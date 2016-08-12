@@ -1,6 +1,10 @@
 """
 Script that preprocesses the entire NOAA daily summeries weather dataset.
 
+Parameters:
+    INPUT_FILE: path to csv file with weather data
+    OUTPUT_FILE: path (hdfs or s3) where preprocessed data frame should be stored
+
 Precomputes a table with the schema:
 - Time: date
 - {STATION}_PRCP: Precipitation in tenth of mm; one column per station
@@ -8,7 +12,7 @@ Precomputes a table with the schema:
 - {STATION}_TMAX: Maximum temperature in celsius degrees to tenths; one column per station
 - {STATION}_AWND: Average daily wind speed in tenths of meters per second; one column per station
 
-Missing values are added using the average value of the three nearest stations on that day. If no station has a value, the overall average is used. 
+Missing values are added using the average value of the three nearest stations on that day. If no station has a value, the overall average is used.
 """
 
 import sys
@@ -84,7 +88,7 @@ def column_name(column, station):
     return '%s_%s' % (column, station)
 
 match_conditons = (weather_df.Station == station) & (weather_df[column] != None)
-columns = [when(match_conditons, weather_df[column]).otherwise(None).alias(column_name(column, station)) 
+columns = [when(match_conditons, weather_df[column]).otherwise(None).alias(column_name(column, station))
            for column in value_columns for station in stations]
 sums = [func.sum(col(column_name(column, station))).alias(column_name(column, station))
         for column in value_columns for station in stations]
@@ -95,7 +99,7 @@ prep_weather_df = prep_weather_df.groupby(weather_df.Date).agg(*sums)
 # Add missing values
 def get_missing_value(station, column, row):
     neighbor_values = [row[column_name(column, station)] for station in station_neighbors[station]]
-    neighbor_values = [x for x in neighbor_values if x != None][:3]        
+    neighbor_values = [x for x in neighbor_values if x != None][:3]
     if neighbor_values:
         return sum(neighbor_values) / len(neighbor_values)
     else:
@@ -111,9 +115,9 @@ def add_missing_values(row):
                 values[column_name(column, station)] = get_missing_value(station, column, row)
             else:
                 values[column_name(column, station)] = row[column_name]
-        
+
     return Row(**values)
-    
+
 prep_weather_df = prep_weather_df.map(add_missing_values).toDF()
 
 # Save preprocessed data frame

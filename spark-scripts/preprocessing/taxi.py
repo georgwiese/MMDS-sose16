@@ -10,6 +10,11 @@ Precomputes a table with the schema:
 
 Lat / Lon discretization is achieved by rounding the floats to two decimal
 places.
+
+Parameters:
+    FILELOCATION_BASE: the path to the folder where the yellow data files are placed (each of them contains the taxi data for one month)
+    INPUT_FILE_LIST_FILE: the path of the file which contains the names of all yellow taxi csv files (filelist.txt)
+    OUTPUT_FILE: the path (hdfs or s3) where the preprocessed yellow taxi data_frame should be stored via parquet
 """
 
 import sys

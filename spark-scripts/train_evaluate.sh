@@ -1,6 +1,8 @@
+# runs training and evaluation on the given feature vector, model folder path, districts file and result path
+# also dont forget to specify wether you use amazon web services or tenem in the last parameter
 if [  $# -lt 6 ]
 then
-  echo "Usage: $0 <model type> <feature file> <model folder> <districs file> <result path> <(aws|tenem)>"
+  echo "Usage: $0 <model type> <feature file> <model folder> <districts file> <result path> <(aws|tenem)>"
   exit 1
 fi
 

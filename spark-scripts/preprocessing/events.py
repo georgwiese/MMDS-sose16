@@ -1,6 +1,10 @@
 """
 Script that preprocesses the entire merged NYC.gov/Seatgeek event dataset.
 
+Parameters:
+  INPUT-FILE: csv obtained from scripts/event-data-retrieval
+  OUTPUT-FILE: e.g. hdfs or local path where parquet of event data is stored
+
 Precomputes a table with the schema:
 - Time: datetime, with minutes and seconds discarded
 - {VENUE_ID}: Number of events happening at the specific venue; one column per venue
@@ -49,7 +53,7 @@ event_df = event_df.withColumn('end_date', parse_and_discretize(event_df.end_dat
 venues = event_df.select(event_df.latitude, event_df.longitude).distinct().map(lambda row: (row[0], row[1])).collect()
 venue_columns = [str(x) for x in range(len(venues))]
 
-columns = [when((event_df.latitude == venue[0]) & (event_df.longitude == venue[1]), 1).otherwise(0).alias(str(i)) 
+columns = [when((event_df.latitude == venue[0]) & (event_df.longitude == venue[1]), 1).otherwise(0).alias(str(i))
            for i, venue in enumerate(venues)]
 sums = [func.sum(col(column)).alias(column) for column in venue_columns]
 
@@ -64,11 +68,11 @@ def map_to_hour(row):
     values = {column: row[column] for column in venue_columns}
     for date in date_range:
         values['Time'] = date
-        
+
         rows.append(Row(**values))
-    
+
     return rows
-    
+
 prep_event_df = prep_event_df.flatMap(map_to_hour).toDF()
 prep_event_df = prep_event_df.groupby(prep_event_df.Time).agg(*sums)
 

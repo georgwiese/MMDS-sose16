@@ -1,4 +1,4 @@
-"""Provides create_spark_application function to create Spark & SQL contexts."""
+""" Module provides create_spark_application function to create Spark & SQL contexts."""
 
 from pyspark import SparkContext
 from pyspark import SparkConf

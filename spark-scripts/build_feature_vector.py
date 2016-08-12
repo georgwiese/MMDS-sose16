@@ -1,6 +1,12 @@
 """
 Script that joins the given datasets (taxi, weather, events) and extracts the features per hour and district.
 
+Parameters:
+    TAXI_FILE: the path where the preprocessed taxi_df was stored
+    WEATHER_FILE: the path where the preprocessed weather_df was stored
+    EVENTS_FILE: the path where the preprocessed events_df was stored
+    OUTPUT_FILE: the path (hdfs or s3) where the accumulated feature_vector data frame should be stored (using parquet)
+
 Precomputes a table with the schema:
 - Time: datetime, with minutes and seconds discarded
 - Lat: latitude of the district
@@ -37,7 +43,7 @@ Precomputes a table with the schema:
     - {STATION}_TMAX: Maximum temperature in celsius degrees to tenths; one column per station
     - {STATION}_AWND: Average daily wind speed in tenths of meters per second; one column per station
 
-- Vector with one entry per venue that contains the number of occuring events in the corresponding hour(+/-3h) and venue
+- Vector with one entry per venue that contains the number of occurring events in the corresponding hour(+/-3h) and venue
     - Venues_-3h
     - Venues_-2h
     - Venues_-1h
