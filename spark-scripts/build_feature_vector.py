@@ -32,7 +32,7 @@ Precomputes a table with the schema:
     - Pickup_Count_Nyc_4h
     - Dropoff_Count_Nyc_4h
 
-- Hour: hour of the time
+- Hour: hour of the day
 - Day_Of_Week: day of the week
 - Day_Of_Year: day of the year
 - IsHoliday: bool that determines, whether the current date was a holiday or not

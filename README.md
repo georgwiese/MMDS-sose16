@@ -8,9 +8,9 @@ If you simply want to get started, skip to the [Getting Started](#getting_starte
 
 ## Datasets
 
-In this section, we present the dataset used for training hour system.
+In this section, we present the dataset used for training our system.
 
-### TLC Trip Record Datato
+### TLC Trip Record Dataset
 
 The [TLC Trip Record Dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) contains the taxi rides in NYC from 2009 to 2015.
 The provided information includes the start & end times as well as start & end locations.
@@ -23,7 +23,7 @@ The following shows a heatmap of the average pickup frequency by hour:
 
 ### Weather Dataset
 
-The [NOAA Daily Summaries Dataset](http://www.ncdc.noaa.gov/cdo-web/datasets) contains daily weather summaries of 11 station in and around NYC from 2009 to 2015. The weather stations are distributed around NYC as follows:
+The [NOAA Daily Summaries Dataset](http://www.ncdc.noaa.gov/cdo-web/datasets) contains daily weather summaries of a11 stations in and around NYC from 2009 to 2015. The weather stations are distributed around NYC as follows:
 
 ![Map of weather stations](images/weather_stations.png)
 
@@ -39,7 +39,13 @@ We initally also took the *NOAA Hourly Precipitation* dataset into account, but 
 
 ### Event Dataset
 
-TODO(fabian, soeren)
+The [New York City government homepage](http://www1.nyc.gov/events/events-filter.html) contains an events section with about 30k events listed in and around NYC when selecting only events from 2009 to 2015. 
+Those events were sponsored by New York City's government and  we could extract the location (longite, latitude) and start and end times. 
+For retrieving the data we used the [Seatgeek page](http://www.nyc.gov/Seatgeek) which was not online while writing these lines.
+
+You can find some basic statistics on the event dataset in our [event statistics notebook](notebooks/event_statistics.ipynb).
+Each event is matched to the nearest known venues in New York City by our [events preprocessing script](preprocessing/events.py). Later this could be used to create numeric features for each hour and venue,
+stating how many events took place. More details are given in the following.
 
 ## Implementation
 
@@ -77,14 +83,65 @@ We are using this vector implementation instead of having a column per venue to 
 
 ### Feature Extraction
 
-TODO(fabian)
+The feature extraction process is creating feature vectors merging features from all available data sources. 
+Hereby it is important to note that we train one model for each district in new york city. Available training data is accumulated to hours. Hence one hour of accumulated data for one district leads to one feature vector.
+Furthermore the data ranging from the years 2009 to 2015 is split into training data (2009 to 2014) and testing data (2015) for evaluation purpose.
+When training one model per district the hourly feature vectors from 2009 to 2014 become our training data and the hourly feature vectors from 2015 are used for testing the regression capabilities.
 
-- One model per district
-- discretization
+The [build feature vector script](build_feature_vector.py) extracts features from all data sources and combines them in one big feature vector for each hour and for each district.
+In the following we present the structure of the final state of our feature vector:
+
+#### Taxi Dataset - pickups and dropoffs
+
+From the taxi data we accumulated the numbers of pickups and dropoffs per district and per hour in our preprocessing phase.
+Now when creating a feature vector for a certain district and hour we considered the following features:
+
+- number of pickups/dropoffs in the current hour inside the specific district
+- number of pickups/dropoffs in the last 4 hours inside the specific district
+Similar numbers were added for all neighbor districts together and for all districts in New York City.
+
+The following map shows how districts were categorized for the feature vector. The red area symbolizes an example district for which which the feature vector should be extracted as described.
+The orange area symbolizes the accumulation of data from all neighbor districts together.
+
+![District map - inclusion of neighbor districts](images/feature_vector/pickup_dropoff_districts.png)
+
+#### Date and Time
+
+Each feature vector for a specific hour also contains features representing time and calendar constraints. For example this should allow to detect correlations for certain week days, time periods of time of the year.
+As we found numeric features would not be convenient to map the circular time system used by humans (e.g. there are not 6 days in between sunday and monday but a numeric feature for day of the week would model this kind of impression),
+we started off by using a one-hot encoding for our time-related features. This means that each possibility (today is monday, today is january, etc.) becomes one binary feature which is set to true in the case the current day fits to its category.
+For linear regression which is further described in next section this model was best suitable but later we found out that our second model, the random forest works slightly better when using categorical features instead.
+When having categorical features, each considered temporal measurement becomes one feature which can have several different categories (e.g. day of the week can have the categories Monday, Tuesday, ...)
+
+We were adding the following categorical (for linear regression: one-hot-encoded) features to our feature vector:
+
+- hour
+- day of the week
+- day of year
+- month
+
+As our training and testing set was split by year it did not make sense to consider the year as a feature.
+Furthermore a binary feature stating whether the current day was a public holiday was added.
+
+#### Weather Stations
+
+From our weather dataset we added numeric features for precipitation (in tenths of mm), minimum and maximum temperature (in °C to tenths) and the average wind speed (in meter per second to tenths). 
+Those features were valid for one day and for each measure we had eleven features from 11 weather station in the area of New York City. Hence our weather data added up to 44 numeric features per feature vector.
+As the values for one day were all the same we have some redundancy here.
+
+#### Events
+
+Finally we added numeric features for the amount of events which took place in our 2434 venues in the current hour, previous and upcoming hours.
+Features added up to our feature vector as visualized in the following overview:
+
+![Amount of events at venues per hour](images/feature_vector/venues_per_hour.png)
+
+
+Have a look at the [build feature vector script](build_feature_vector.py) for further details.
 
 ### Training
 
-Using our features from the previous section, we trained two kinds regression models: A linear regeression and a random forest regression model.
+Using our features from the previous section, we trained two kind of regression models: A linear regeression and a random forest regression model.
 Since we are training one model per district, we trained multiple models for each of the two.
 
 #### Linear Regression
