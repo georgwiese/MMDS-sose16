@@ -1,5 +1,5 @@
 """
-Script that preprocesses the entire merged NYC.gov/Seatgeek event dataset.
+Script that preprocesses the entire merged NYC.gov / Seatgeek event dataset.
 
 Parameters:
   INPUT-FILE: csv obtained from scripts/event-data-retrieval

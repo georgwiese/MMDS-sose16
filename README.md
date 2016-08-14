@@ -39,13 +39,14 @@ We initally also took the *NOAA Hourly Precipitation* dataset into account, but 
 
 ### Event Dataset
 
-The [New York City government homepage](http://www1.nyc.gov/events/events-filter.html) contains an events section with about 30k events listed in and around NYC when selecting only events from 2009 to 2015. 
-Those events were sponsored by New York City's government and  we could extract the location (longite, latitude) and start and end times. 
-For retrieving the data we used the [Seatgeek page](http://www.nyc.gov/Seatgeek) which was not online while writing these lines.
+The [New York City government homepage](http://www1.nyc.gov/events/events-filter.html) contains an events section with about 36k events listed in and around NYC when selecting only events from 2009 to 2015. 
+Those events were mostly sponsored by New York City's government and  we could extract the location and start and end times because there was a given an [api](http://www1.nyc.gov/calendar/api/json/search.htm?&sort=DATE) where we could [crawl](scripts/event-data-retrievial/crawl_events.py). event json's by pages.
+After crawling the event data, we parsed it to csv format retrieving the information of interest. 
+From [Seatgeek.com](https://seatgeek.com) we could retrieve 2434 venues in New York City given by latitude and longitude. Initially we planned to create a feature from the ticket prices but matching events to venues also helped structuring our features. 
+We mapped all events to the nearest known venues by matching the event location to geo location data (longitude, latitude). Therefore we utilized the [Google Maps Geocoding API](https://developers.google.com/maps/documentation/geocoding/).
+The code for event and venue crawling, csv parsing and the mapping of events to venues can be found in the [event-data-retrieval folder](sripts/event-data-retrieval).
 
 You can find some basic statistics on the event dataset in our [event statistics notebook](notebooks/event_statistics.ipynb).
-Each event is matched to the nearest known venues in New York City by our [events preprocessing script](preprocessing/events.py). Later this could be used to create numeric features for each hour and venue,
-stating how many events took place. More details are given in the following.
 
 ## Implementation
 
